@@ -1,0 +1,550 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-Vístete - Inicio</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Nuestros estilos -->
+    <link href="{% static 'posts/css/inicio.css' %}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tshirt me-2"></i>R-Vístete
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-store"></i> Mis Publicaciones
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/mis-ventas"><i class="fas fa-shopping-bag"></i> Mis Ventas</a></li>
+                            <li><a class="dropdown-item" href="/mis-alquileres"><i class="fas fa-key"></i> Mis Alquileres</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/publicar"><i class="fas fa-plus"></i> Publicar Prenda</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/mis-compras">
+                            <i class="fas fa-shopping-cart"></i> Mis Compras
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/favoritos">
+                            <i class="fas fa-heart"></i> Favoritos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/mensajes">
+                            <i class="fas fa-envelope"></i> Mensajes
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="{{ request.user.usuario.foto_perfil }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                            Mi Perfil
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/perfil"><i class="fas fa-user"></i> Ver Perfil</a></li>
+                            <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/users/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="/notificaciones">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                3
+                                <span class="visually-hidden">notificaciones no leídas</span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Espaciador para el navbar fixed -->
+    <div style="margin-top: 76px;"></div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+    {% for publicacion in publicaciones %}
+                <div class="post-card">
+                    <div class="post-header">
+                        {% if publicacion.usuario.foto_perfil %}
+                            <img src="{{ publicacion.usuario.foto_perfil }}" alt="{{ publicacion.usuario.nombre }}" class="user-avatar">
+                        {% else %}
+                            <img src="{% static 'posts/img/default-avatar.png' %}" alt="{{ publicacion.usuario.nombre }}" class="user-avatar">
+                        {% endif %}
+                        <a href="#" class="user-name">{{ publicacion.usuario.nombre }}</a>
+                    </div>
+                    <img src="{{ publicacion.imagen_url }}" alt="{{ publicacion.titulo }}" class="post-image">
+                    <div class="post-content">
+                        <h5>{{ publicacion.titulo }}</h5>
+            <p>{{ publicacion.descripcion }}</p>
+                        <p class="price-tag">$ {{ publicacion.precio }}</p>
+                        <small class="text-muted">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="comprar({{ publicacion.id }})">
+                            <i class="fas fa-shopping-cart"></i> Comprar
+                        </button>
+                        <button class="btn btn-success" onclick="alquilar({{ publicacion.id }})">
+                            <i class="fas fa-key"></i> Alquilar
+                        </button>
+                        <button class="btn btn-outline-danger like-button" onclick="darLike({{ publicacion.id }}, this)">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="mostrarComentarios({{ publicacion.id }})">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-info">
+                    No hay publicaciones disponibles en este momento.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Compra -->
+    <div class="modal fade" id="modalCompra" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Comprar Prenda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- El contenido se llenará dinámicamente -->
+                    <div id="modalCompraDisponible" style="display: none;">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <img id="modalImagenPrenda" src="" alt="Prenda" class="me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <h6 id="modalTituloPrenda" class="mb-1"></h6>
+                                    <p id="modalPrecioPrenda" class="price-tag mb-0"></p>
+                                </div>
+                            </div>
+                            <hr>
+                            <form id="formCompra">
+                                <div class="mb-3">
+                                    <label class="form-label">Talla Seleccionada</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar talla</option>
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Dirección de Envío</label>
+                                    <textarea class="form-control" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Método de Pago</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar método de pago</option>
+                                        <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                                        <option value="efectivo">Pago en Efectivo</option>
+                                        <option value="transferencia">Transferencia Bancaria</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="modalCompraNoDisponible" style="display: none;">
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Prenda No Disponible</h5>
+                            <p class="text-muted">Lo sentimos, esta prenda ya no está disponible para compra.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmarCompra">Confirmar Compra</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Alquiler -->
+    <div class="modal fade" id="modalAlquiler" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alquilar Prenda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalAlquilerDisponible" style="display: none;">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <img id="modalAlquilerImagen" src="" alt="Prenda" class="me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <h6 id="modalAlquilerTitulo" class="mb-1"></h6>
+                                    <p id="modalAlquilerPrecio" class="price-tag mb-0"></p>
+                                </div>
+                            </div>
+                            <hr>
+                            <form id="formAlquiler">
+                                <div class="mb-3">
+                                    <label class="form-label">Talla Seleccionada</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar talla</option>
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Fecha de Inicio</label>
+                                    <input type="date" class="form-control" required min="{{ today|date:'Y-m-d' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Duración del Alquiler</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar duración</option>
+                                        <option value="3">3 días</option>
+                                        <option value="7">1 semana</option>
+                                        <option value="14">2 semanas</option>
+                                        <option value="30">1 mes</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Dirección de Envío</label>
+                                    <textarea class="form-control" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Método de Pago</label>
+                                    <select class="form-select" required>
+                                        <option value="">Seleccionar método de pago</option>
+                                        <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                                        <option value="efectivo">Pago en Efectivo</option>
+                                        <option value="transferencia">Transferencia Bancaria</option>
+                                    </select>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <small>Se requiere un depósito de garantía reembolsable del 50% del valor de la prenda.</small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="modalAlquilerNoDisponible" style="display: none;">
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Prenda No Disponible para Alquiler</h5>
+                            <p class="text-muted">Lo sentimos, esta prenda no está disponible para alquiler en este momento.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarAlquiler">Confirmar Alquiler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Comentarios -->
+    <div class="modal fade" id="modalComentarios" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Comentarios</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="comentarios-lista mb-4">
+                        <!-- Los comentarios se cargarán aquí dinámicamente -->
+                    </div>
+                    <hr>
+                    <form id="formComentario" class="mt-3">
+                        <div class="mb-3">
+                            <label for="nuevoComentario" class="form-label">Agregar un comentario</label>
+                            <textarea class="form-control" id="nuevoComentario" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Publicar Comentario</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS y Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables para los modales
+        let modalCompra;
+        let modalAlquiler;
+        let modalComentarios;
+        let publicacionActual;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar los modales
+            modalCompra = new bootstrap.Modal(document.getElementById('modalCompra'));
+            modalAlquiler = new bootstrap.Modal(document.getElementById('modalAlquiler'));
+            modalComentarios = new bootstrap.Modal(document.getElementById('modalComentarios'));
+            
+            // Eventos para ocultar botones de confirmación
+            document.getElementById('modalCompra').addEventListener('hidden.bs.modal', function () {
+                document.getElementById('btnConfirmarCompra').style.display = 'none';
+            });
+
+            document.getElementById('modalAlquiler').addEventListener('hidden.bs.modal', function () {
+                document.getElementById('btnConfirmarAlquiler').style.display = 'none';
+            });
+
+            // Establecer fecha mínima para el alquiler
+            const fechaInput = document.querySelector('#formAlquiler input[type="date"]');
+            if (fechaInput) {
+                const hoy = new Date();
+                const manana = new Date(hoy);
+                manana.setDate(manana.getDate() + 1);
+                fechaInput.min = manana.toISOString().split('T')[0];
+            }
+        });
+
+        function comprar(publicacionId) {
+            publicacionActual = publicacionId;
+            
+            // Obtener los datos de la publicación
+            const publicacionElement = document.querySelector(`button[onclick="comprar(${publicacionId})"]`).closest('.post-card');
+            const imagen = publicacionElement.querySelector('.post-image').src;
+            const titulo = publicacionElement.querySelector('h5').textContent;
+            const precio = publicacionElement.querySelector('.price-tag').textContent;
+
+            // Verificar disponibilidad (aquí deberías hacer una llamada al backend)
+            verificarDisponibilidad(publicacionId).then(disponible => {
+                if (disponible) {
+                    // Mostrar formulario de compra
+                    document.getElementById('modalCompraDisponible').style.display = 'block';
+                    document.getElementById('modalCompraNoDisponible').style.display = 'none';
+                    document.getElementById('btnConfirmarCompra').style.display = 'block';
+
+                    // Llenar datos de la prenda
+                    document.getElementById('modalImagenPrenda').src = imagen;
+                    document.getElementById('modalTituloPrenda').textContent = titulo;
+                    document.getElementById('modalPrecioPrenda').textContent = precio;
+                } else {
+                    // Mostrar mensaje de no disponible
+                    document.getElementById('modalCompraDisponible').style.display = 'none';
+                    document.getElementById('modalCompraNoDisponible').style.display = 'block';
+                    document.getElementById('btnConfirmarCompra').style.display = 'none';
+                }
+                
+                modalCompra.show();
+            });
+        }
+
+        // Función para verificar disponibilidad (simulada por ahora)
+        function verificarDisponibilidad(publicacionId) {
+            // Aquí deberías hacer una llamada al backend
+            return new Promise((resolve) => {
+                // Simulamos que está disponible el 80% de las veces
+                setTimeout(() => {
+                    resolve(Math.random() < 0.8);
+                }, 500);
+            });
+        }
+
+        // Manejar el envío del formulario de compra
+        document.getElementById('btnConfirmarCompra').addEventListener('click', function() {
+            const form = document.getElementById('formCompra');
+            if (form.checkValidity()) {
+                // Aquí irá la lógica para procesar la compra
+                alert('¡Compra realizada con éxito!');
+                modalCompra.hide();
+            } else {
+                form.reportValidity();
+            }
+        });
+
+        function alquilar(publicacionId) {
+            publicacionActual = publicacionId;
+            
+            // Obtener los datos de la publicación
+            const publicacionElement = document.querySelector(`button[onclick="alquilar(${publicacionId})"]`).closest('.post-card');
+            const imagen = publicacionElement.querySelector('.post-image').src;
+            const titulo = publicacionElement.querySelector('h5').textContent;
+            const precio = publicacionElement.querySelector('.price-tag').textContent;
+
+            // Verificar disponibilidad para alquiler
+            verificarDisponibilidadAlquiler(publicacionId).then(disponible => {
+                if (disponible) {
+                    // Mostrar formulario de alquiler
+                    document.getElementById('modalAlquilerDisponible').style.display = 'block';
+                    document.getElementById('modalAlquilerNoDisponible').style.display = 'none';
+                    document.getElementById('btnConfirmarAlquiler').style.display = 'block';
+
+                    // Llenar datos de la prenda
+                    document.getElementById('modalAlquilerImagen').src = imagen;
+                    document.getElementById('modalAlquilerTitulo').textContent = titulo;
+                    document.getElementById('modalAlquilerPrecio').textContent = precio;
+                } else {
+                    // Mostrar mensaje de no disponible
+                    document.getElementById('modalAlquilerDisponible').style.display = 'none';
+                    document.getElementById('modalAlquilerNoDisponible').style.display = 'block';
+                    document.getElementById('btnConfirmarAlquiler').style.display = 'none';
+                }
+                
+                modalAlquiler.show();
+            });
+        }
+
+        // Función para verificar disponibilidad de alquiler (simulada por ahora)
+        function verificarDisponibilidadAlquiler(publicacionId) {
+            return new Promise((resolve) => {
+                // Simulamos que está disponible el 70% de las veces
+                setTimeout(() => {
+                    resolve(Math.random() < 0.7);
+                }, 500);
+            });
+        }
+
+        // Manejar el envío del formulario de alquiler
+        document.getElementById('btnConfirmarAlquiler').addEventListener('click', function() {
+            const form = document.getElementById('formAlquiler');
+            if (form.checkValidity()) {
+                // Aquí irá la lógica para procesar el alquiler
+                alert('¡Alquiler realizado con éxito!');
+                modalAlquiler.hide();
+            } else {
+                form.reportValidity();
+            }
+        });
+
+        function darLike(publicacionId, button) {
+            button.classList.toggle('active');
+            // Implementaremos la lógica de likes después
+            alert('Implementar lógica de likes para publicación ' + publicacionId);
+        }
+
+        // Función para mostrar comentarios
+        function mostrarComentarios(publicacionId) {
+            publicacionActual = publicacionId;
+            
+            // Limpiar lista de comentarios
+            const comentariosLista = document.querySelector('.comentarios-lista');
+            comentariosLista.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+            
+            // Cargar comentarios
+            fetch(`/api/comentarios/${publicacionId}/`)
+                .then(response => response.json())
+                .then(comentarios => {
+                    comentariosLista.innerHTML = '';
+                    if (comentarios.length === 0) {
+                        comentariosLista.innerHTML = '<p class="text-muted text-center">No hay comentarios aún. ¡Sé el primero en comentar!</p>';
+                    } else {
+                        comentarios.forEach(comentario => {
+                            const fecha = new Date(comentario.fecha_comentario).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            comentariosLista.innerHTML += `
+                                <div class="comentario mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <img src="${comentario.usuario_foto}" alt="" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-1">${comentario.usuario_nombre}</h6>
+                                            <p class="mb-1">${comentario.comentario}</p>
+                                            <small class="text-muted">${fecha}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                })
+                .catch(error => {
+                    comentariosLista.innerHTML = '<div class="alert alert-danger">Error al cargar los comentarios. Por favor, intenta de nuevo más tarde.</div>';
+                    console.error('Error:', error);
+                });
+            
+            modalComentarios.show();
+        }
+
+        // Manejar envío de nuevo comentario
+        document.getElementById('formComentario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const comentario = document.getElementById('nuevoComentario').value;
+            if (!comentario.trim()) return;
+
+            const formData = new FormData();
+            formData.append('comentario', comentario);
+            formData.append('publicacion_id', publicacionActual);
+
+            fetch('/api/comentarios/crear/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Limpiar el formulario y recargar comentarios
+                    document.getElementById('nuevoComentario').value = '';
+                    mostrarComentarios(publicacionActual);
+                } else {
+                    alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
+            });
+        });
+
+        // Función auxiliar para obtener el token CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
