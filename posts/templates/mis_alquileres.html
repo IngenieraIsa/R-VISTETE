@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado y Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-4">Mis Alquileres</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Publicaciones</h5>
+                            <h2 class="card-text">{{ estadisticas.total_publicaciones }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">En Alquiler</h5>
+                            <h2 class="card-text">{{ estadisticas.total_alquiladas }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Ingresos Totales</h5>
+                            <h2 class="card-text">${{ estadisticas.total_ingresos }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtroEstado">
+                                <option value="">Todos los estados</option>
+                                <option value="disponible">Disponible</option>
+                                <option value="alquilada">En Alquiler</option>
+                                <option value="reservada">Reservada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" placeholder="Fecha desde">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Buscar por título o descripción...">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Publicaciones -->
+    <div class="row">
+        {% for publicacion in publicaciones %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="{{ publicacion.imagen_url }}" class="img-fluid rounded-start" alt="{{ publicacion.titulo }}" style="height: 200px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title">{{ publicacion.titulo }}</h5>
+                                <span class="badge bg-success">Disponible</span>
+                            </div>
+                            <p class="card-text">{{ publicacion.descripcion|truncatechars:100 }}</p>
+                            <p class="card-text">
+                                <strong>Precio por día: ${{ publicacion.precio }}</strong><br>
+                                <small>Depósito: ${{ publicacion.deposito }}</small>
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y" }}</small>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#calendario{{ publicacion.id }}">
+                                    <i class="fas fa-calendar"></i> Ver Calendario
+                                </button>
+                            </div>
+                            
+                            <!-- Calendario Colapsable -->
+                            <div class="collapse mt-3" id="calendario{{ publicacion.id }}">
+                                <div class="card card-body">
+                                    <h6 class="mb-3">Próximos Alquileres</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha Inicio</th>
+                                                    <th>Fecha Fin</th>
+                                                    <th>Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>01/04/2024</td>
+                                                    <td>05/04/2024</td>
+                                                    <td><span class="badge bg-warning">Reservado</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>10/04/2024</td>
+                                                    <td>15/04/2024</td>
+                                                    <td><span class="badge bg-success">Confirmado</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="btn-group mt-3">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalRegistrarAlquiler">
+                                    <i class="fas fa-plus"></i> Registrar Alquiler
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h4>No tienes prendas en alquiler</h4>
+                <p>¡Comienza a alquilar tus prendas ahora!</p>
+                <a href="/publicar" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear nueva publicación
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal de Registrar Alquiler -->
+<div class="modal fade" id="modalRegistrarAlquiler" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Nuevo Alquiler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formRegistrarAlquiler">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Inicio</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duración (días)</label>
+                        <select class="form-select" required>
+                            <option value="3">3 días</option>
+                            <option value="7">1 semana</option>
+                            <option value="14">2 semanas</option>
+                            <option value="30">1 mes</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cliente</label>
+                        <input type="text" class="form-control" placeholder="Nombre del cliente" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Depósito Recibido</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">Confirmar Alquiler</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar esta publicación?</p>
+                <p class="text-danger"><small>Esta acción no se puede deshacer.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar los modales
+        const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminar'));
+        const modalRegistrarAlquiler = new bootstrap.Modal(document.getElementById('modalRegistrarAlquiler'));
+
+        // Manejadores para los botones de acción
+        document.querySelectorAll('.btn-outline-danger').forEach(btn => {
+            btn.addEventListener('click', function() {
+                modalEliminar.show();
+            });
+        });
+
+        // Establecer fecha mínima para el alquiler
+        const fechaInput = document.querySelector('#formRegistrarAlquiler input[type="date"]');
+        if (fechaInput) {
+            const hoy = new Date();
+            fechaInput.min = hoy.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %} 

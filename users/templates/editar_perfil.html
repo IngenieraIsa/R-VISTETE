@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Editar Perfil</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">Información Básica</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-control" name="nombre" value="{{ usuario.nombre }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellido</label>
+                                <input type="text" class="form-control" name="apellido" value="{{ usuario.apellido }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <input type="text" class="form-control" name="estado" value="{{ perfil.estado|default:'' }}" placeholder="¿Qué estás pensando?">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" name="descripcion" rows="3" placeholder="Cuéntanos sobre ti">{{ perfil.descripcion|default:'' }}</textarea>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Información de Contacto</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" name="telefono" value="{{ perfil.telefono|default:'' }}" placeholder="+58 123456789">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" name="ubicacion" value="{{ perfil.ubicacion|default:'' }}" placeholder="Ciudad, País">
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Redes Sociales</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Instagram</label>
+                            <div class="input-group">
+                                <span class="input-group-text">@</span>
+                                <input type="text" class="form-control" name="red_instagram" value="{{ perfil.redes_sociales.instagram|default:'' }}" placeholder="usuario">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Twitter</label>
+                            <div class="input-group">
+                                <span class="input-group-text">@</span>
+                                <input type="text" class="form-control" name="red_twitter" value="{{ perfil.redes_sociales.twitter|default:'' }}" placeholder="usuario">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Facebook</label>
+                            <input type="url" class="form-control" name="red_facebook" value="{{ perfil.redes_sociales.facebook|default:'' }}" placeholder="URL de tu perfil">
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Intereses</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Intereses (separados por comas)</label>
+                            <input type="text" class="form-control" name="intereses" value="{{ intereses }}" placeholder="moda, vintage, casual, formal">
+                            <small class="text-muted">Ejemplo: moda, vintage, casual, formal</small>
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <a href="{% url 'ver_perfil' %}" class="btn btn-secondary me-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación de formato de teléfono
+    const telefonoInput = document.querySelector('input[name="telefono"]');
+    if (telefonoInput) {
+        telefonoInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9+]/g, '');
+            if (value.length > 15) value = value.slice(0, 15);
+            e.target.value = value;
+        });
+    }
+
+    // Validación de intereses
+    const interesesInput = document.querySelector('input[name="intereses"]');
+    if (interesesInput) {
+        interesesInput.addEventListener('input', function(e) {
+            let intereses = e.target.value.split(',');
+            intereses = intereses.map(i => i.trim()).filter(i => i);
+            if (intereses.length > 10) {
+                intereses = intereses.slice(0, 10);
+                e.target.value = intereses.join(', ');
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

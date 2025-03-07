@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="{% static 'posts/img/default-avatar.png' %}" alt="{{ usuario.nombre }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    <h3>{{ usuario.nombre }} {{ usuario.apellido }}</h3>
+                    <p class="text-muted">{{ perfil.estado|default:"Sin estado" }}</p>
+                    <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar Perfil</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Sobre mí</h5>
+                    <p>{{ perfil.descripcion|default:"Sin descripción" }}</p>
+                    
+                    <h5 class="card-title mt-4">Información de contacto</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Email:</strong> {{ usuario.correo }}</li>
+                        {% if perfil.telefono %}
+                        <li><strong>Teléfono:</strong> {{ perfil.telefono }}</li>
+                        {% endif %}
+                        {% if perfil.ubicacion %}
+                        <li><strong>Ubicación:</strong> {{ perfil.ubicacion }}</li>
+                        {% endif %}
+                    </ul>
+
+                    {% if perfil.redes_sociales %}
+                    <h5 class="card-title mt-4">Redes Sociales</h5>
+                    <div class="social-links">
+                        {% if perfil.redes_sociales.instagram %}
+                        <a href="{{ perfil.redes_sociales.instagram }}" target="_blank" class="btn btn-outline-primary me-2">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                        {% endif %}
+                        {% if perfil.redes_sociales.twitter %}
+                        <a href="{{ perfil.redes_sociales.twitter }}" target="_blank" class="btn btn-outline-primary me-2">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                        {% endif %}
+                        {% if perfil.redes_sociales.facebook %}
+                        <a href="{{ perfil.redes_sociales.facebook }}" target="_blank" class="btn btn-outline-primary me-2">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if perfil.intereses %}
+                    <h5 class="card-title mt-4">Intereses</h5>
+                    <div class="interests-tags">
+                        {% for interes in perfil.intereses %}
+                        <span class="badge bg-secondary me-2">{{ interes }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sección de estadísticas -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Estadísticas</h5>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h3>0</h3>
+                            <small class="text-muted">Publicaciones</small>
+                        </div>
+                        <div class="col-4">
+                            <h3>0</h3>
+                            <small class="text-muted">Ventas</small>
+                        </div>
+                        <div class="col-4">
+                            <h3>0</h3>
+                            <small class="text-muted">Alquileres</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -476,7 +476,7 @@
                             comentariosLista.innerHTML += `
                                 <div class="comentario mb-3">
                                     <div class="d-flex align-items-start">
-                                        <img src="${comentario.usuario_foto}" alt="" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                        <img src="${comentario.usuario_foto || '/static/posts/img/default-avatar.png'}" alt="" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
                                         <div>
                                             <h6 class="mb-1">${comentario.usuario_nombre}</h6>
                                             <p class="mb-1">${comentario.comentario}</p>
@@ -507,26 +507,41 @@
             formData.append('comentario', comentario);
             formData.append('publicacion_id', publicacionActual);
 
+            // Mostrar indicador de carga
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Publicando...';
+
             fetch('/api/comentarios/crear/', {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
-                }
+                },
+                credentials: 'same-origin'  // Importante para las cookies
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => response.json().then(data => ({status: response.status, data: data})))
+            .then(({status, data}) => {
+                if (status === 200 && data.success) {
                     // Limpiar el formulario y recargar comentarios
                     document.getElementById('nuevoComentario').value = '';
                     mostrarComentarios(publicacionActual);
                 } else {
-                    alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
+                    // Mostrar mensaje de error específico
+                    const mensaje = data.error || 'Error al publicar el comentario. Por favor, intenta de nuevo.';
+                    alert(mensaje);
+                    console.error('Error:', data);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
+            })
+            .finally(() => {
+                // Restaurar el botón
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
             });
         });
 
