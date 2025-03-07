@@ -7,4 +7,5 @@ urlpatterns = [
     path('api/comentarios/crear/', views.crear_comentario, name='crear_comentario'),
     path('mis-ventas/', views.mis_ventas_view, name='mis_ventas'),
     path('mis-alquileres/', views.mis_alquileres_view, name='mis_alquileres'),
+    path('notificaciones/', views.notificaciones_view, name='notificaciones'),
 ]

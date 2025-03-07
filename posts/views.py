@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -215,3 +215,12 @@ def mis_alquileres_view(request):
     except Usuario.DoesNotExist:
         # Si el usuario no tiene perfil, redirigir a completar perfil
         return redirect('completar_perfil')
+
+@login_required
+def notificaciones_view(request):
+    # Por ahora, solo renderizamos la plantilla con un mensaje
+    # En el futuro, aquí cargaremos las notificaciones de la base de datos
+    context = {
+        'notificaciones': []  # Lista vacía por ahora
+    }
+    return render(request, 'notificaciones.html', context)
