@@ -18,13 +18,29 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from users import views as user_views
+from django.shortcuts import redirect
+
+def home_view(request):
+    # Debug logging
+    print("Home view called")
+    print("Session:", request.session.items())
+    
+    usuario_id = request.session.get('usuario_id')
+    print("Usuario ID from session:", usuario_id)
+    
+    # Si el usuario está autenticado, redirigir a inicio
+    if usuario_id:
+        print("Usuario autenticado, redirigiendo a inicio")
+        return redirect('/inicio/')
+    
+    # Si no está autenticado, redirigir al login
+    print("Usuario no autenticado, redirigiendo a login")
+    return redirect('/usuarios/login/')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', include('users.urls')),
-    path('', include('posts.urls')),
-    path('perfil/', user_views.ver_perfil, name='ver_perfil'),
-    path('perfil/editar/', user_views.editar_perfil, name='editar_perfil'),
+    path('usuarios/', include('users.urls')),
+    path('inicio/', include('posts.urls')),  # Todas las URLs de posts estarán bajo /inicio/
+    path('', home_view, name='home'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

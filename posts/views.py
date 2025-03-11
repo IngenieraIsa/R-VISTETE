@@ -4,17 +4,54 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Sum, Count, Q
-from .models import Publicacion, Comentario, Venta, Alquiler
+from .models import Publicacion, Comentario, Venta, Alquiler, Favorito
 from users.models import Usuario
 from django.utils import timezone
 import json
 
-@login_required(login_url='/users/login/')
-@ensure_csrf_cookie
 def inicio_view(request):
-    # Obtener todas las publicaciones ordenadas por fecha
-    publicaciones = Publicacion.objects.all().order_by('-fecha_publicacion')
-    return render(request, 'inicio.html', {'publicaciones': publicaciones})
+    # Debug logging
+    print("Inicio view called")
+    print("Session:", request.session.items())
+    print("Path:", request.path)
+    
+    # Verificar si el usuario está autenticado
+    usuario_id = request.session.get('usuario_id')
+    print("Usuario ID from session:", usuario_id)
+    
+    if not usuario_id:
+        print("No usuario_id in session, redirecting to login")
+        return redirect('/usuarios/login/')
+    
+    try:
+        # Verificar que el usuario existe
+        usuario = Usuario.objects.get(id=usuario_id)
+        print("Usuario encontrado:", usuario.nombre)
+        
+        # Obtener las publicaciones
+        publicaciones = Publicacion.objects.all().order_by('-fecha_publicacion')
+        
+        # Obtener los IDs de las publicaciones favoritas del usuario
+        favoritos = Favorito.objects.filter(usuario=usuario)
+        favoritos_ids = favoritos.values_list('publicacion_id', flat=True)
+        
+        context = {
+            'publicaciones': publicaciones,
+            'usuario': usuario,
+            'nombre_usuario': usuario.nombre,
+            'favoritos': list(favoritos_ids),
+            'favoritos_count': favoritos.count()
+        }
+        print("Rendering inicio.html with context")
+        return render(request, 'inicio.html', context)
+    except Usuario.DoesNotExist as e:
+        print("Usuario no existe en la base de datos:", str(e))
+        request.session.flush()
+        return redirect('/usuarios/login/')
+    except Exception as e:
+        print("Error inesperado:", str(e))
+        request.session.flush()
+        return redirect('/usuarios/login/')
 
 @login_required
 def get_comentarios(request, publicacion_id):
@@ -224,3 +261,59 @@ def notificaciones_view(request):
         'notificaciones': []  # Lista vacía por ahora
     }
     return render(request, 'notificaciones.html', context)
+
+@require_http_methods(["POST"])
+def toggle_favorito(request, publicacion_id):
+    try:
+        # Obtener el usuario y la publicación
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
+            
+        usuario = Usuario.objects.get(id=usuario_id)
+        publicacion = Publicacion.objects.get(id=publicacion_id)
+        
+        # Verificar si ya existe el favorito
+        favorito = Favorito.objects.filter(usuario=usuario, publicacion=publicacion).first()
+        
+        if favorito:
+            # Si existe, lo eliminamos
+            favorito.delete()
+            return JsonResponse({
+                'status': 'removed',
+                'message': 'Eliminado de favoritos'
+            })
+        else:
+            # Si no existe, lo creamos
+            Favorito.objects.create(usuario=usuario, publicacion=publicacion)
+            return JsonResponse({
+                'status': 'added',
+                'message': 'Agregado a favoritos'
+            })
+            
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'error': 'Publicación no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def ver_favoritos(request):
+    # Verificar si el usuario está autenticado
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        return redirect('/usuarios/login/')
+    
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        # Obtener todos los favoritos del usuario
+        favoritos = Favorito.objects.filter(usuario=usuario).select_related('publicacion')
+        
+        context = {
+            'favoritos': favoritos,
+            'usuario': usuario,
+            'nombre_usuario': usuario.nombre,
+            'favoritos_count': favoritos.count()
+        }
+        return render(request, 'favoritos.html', context)
+    except Usuario.DoesNotExist:
+        request.session.flush()
+        return redirect('/usuarios/login/')

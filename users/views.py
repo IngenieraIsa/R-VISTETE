@@ -5,37 +5,52 @@ from django.contrib.auth.decorators import login_required
 from .models import Usuario, PerfilUsuario
 from django.contrib.auth.models import User
 import json
+from django.urls import reverse
 
 def login_view(request):
+    # Debug logging
+    print("Login view called")
+    print("Session:", request.session.items())
+    print("Next parameter:", request.GET.get('next'))
+    
+    # Si el usuario ya está autenticado, redirigir directamente a inicio
+    if request.session.get('usuario_id'):
+        return redirect('/inicio/')
+    
     if request.method == "POST":
         correo = request.POST.get("correo")
         contrasena = request.POST.get("contrasena")
         
+        # Validar que se proporcionaron ambos campos
+        if not correo or not contrasena:
+            return render(request, "login.html", {
+                "error": "Por favor ingresa tanto el correo como la contraseña"
+            })
+        
         try:
-            # Intentar encontrar el usuario personalizado
+            # Buscar el usuario en la tabla usuarios
             usuario = Usuario.objects.get(correo=correo)
-            if usuario.contrasena == contrasena:  # Nota: En producción deberías usar hash
-                # Crear o obtener el usuario de Django
-                if usuario.user is None:
-                    # Crear nuevo usuario de Django
-                    user = User.objects.create_user(
-                        username=correo,
-                        email=correo,
-                        password=contrasena
-                    )
-                    # Vincular con nuestro modelo Usuario
-                    usuario.user = user
-                    usuario.save()
-                else:
-                    user = usuario.user
+            
+            # Validar la contraseña
+            if usuario.contrasena == contrasena:
+                # Guardar el ID del usuario en la sesión
+                request.session['usuario_id'] = usuario.id
+                request.session['nombre_usuario'] = usuario.nombre
+                request.session.save()
                 
-                # Iniciar sesión
-                login(request, user)
-                return redirect('inicio')
+                # Redirigir a la página de inicio usando path absoluto
+                return redirect('/inicio/')
             else:
-                return JsonResponse({"error": "Contraseña incorrecta"}, status=401)
+                return render(request, "login.html", {
+                    "error": "La contraseña es incorrecta",
+                    "correo": correo
+                })
+                
         except Usuario.DoesNotExist:
-            return JsonResponse({"error": "Usuario no encontrado"}, status=401)
+            return render(request, "login.html", {
+                "error": "No existe una cuenta con este correo",
+                "correo": correo
+            })
 
     return render(request, "login.html")
 
@@ -99,3 +114,8 @@ def editar_perfil(request):
         return render(request, 'editar_perfil.html', context)
     except Usuario.DoesNotExist:
         return redirect('login')
+
+def logout_view(request):
+    # Limpiar la sesión
+    request.session.flush()
+    return redirect('users:login')

@@ -112,3 +112,17 @@ class Alquiler(models.Model):
         if self.fecha_fin <= self.fecha_inicio:
             raise ValueError("La fecha de fin debe ser posterior a la fecha de inicio")
         super().save(*args, **kwargs)
+
+class Favorito(models.Model):
+    id = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='usuario_id')
+    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE, db_column='publicacion_id')
+    fecha_favorito = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'favoritos'
+        unique_together = ('usuario', 'publicacion')
+        ordering = ['-fecha_favorito']
+
+    def __str__(self):
+        return f"Favorito de {self.usuario.nombre} - {self.publicacion.titulo}"

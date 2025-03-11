@@ -11,6 +11,25 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Nuestros estilos -->
     <link href="{% static 'posts/css/inicio.css' %}" rel="stylesheet">
+    <style>
+        .favorite-btn {
+            border: none;
+            background: none;
+            color: #dc3545;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .favorite-btn:hover {
+            transform: scale(1.1);
+        }
+        .favorite-btn.active {
+            color: #dc3545;
+        }
+        .favorite-btn.inactive {
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -45,7 +64,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/favoritos">
+                        <a class="nav-link" href="/inicio/mis-favoritos/">
                             <i class="fas fa-heart"></i> Favoritos
                         </a>
                     </li>
@@ -89,7 +108,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
     {% for publicacion in publicaciones %}
-                <div class="post-card">
+                <div class="post-card" id="publicacion-{{ publicacion.id }}">
                     <div class="post-header">
                         {% if publicacion.usuario.foto_perfil %}
                             <img src="{{ publicacion.usuario.foto_perfil }}" alt="{{ publicacion.usuario.nombre }}" class="user-avatar">
@@ -100,7 +119,13 @@
                     </div>
                     <img src="{{ publicacion.imagen_url }}" alt="{{ publicacion.titulo }}" class="post-image">
                     <div class="post-content">
-                        <h5>{{ publicacion.titulo }}</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>{{ publicacion.titulo }}</h5>
+                            <button class="favorite-btn {% if publicacion.id in favoritos %}active{% else %}inactive{% endif %}" 
+                                    onclick="toggleFavorito({{ publicacion.id }}, this)">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
             <p>{{ publicacion.descripcion }}</p>
                         <p class="price-tag">$ {{ publicacion.precio }}</p>
                         <small class="text-muted">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y H:i" }}</small>
@@ -111,9 +136,6 @@
                         </button>
                         <button class="btn btn-success" onclick="alquilar({{ publicacion.id }})">
                             <i class="fas fa-key"></i> Alquilar
-                        </button>
-                        <button class="btn btn-outline-danger like-button" onclick="darLike({{ publicacion.id }}, this)">
-                            <i class="fas fa-heart"></i>
                         </button>
                         <button class="btn btn-outline-secondary" onclick="mostrarComentarios({{ publicacion.id }})">
                             <i class="fas fa-comment"></i>
@@ -301,6 +323,7 @@
 
     <!-- Bootstrap JS y Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
     <script>
         // Variables para los modales
         let modalCompra;
@@ -442,10 +465,24 @@
             }
         });
 
-        function darLike(publicacionId, button) {
-            button.classList.toggle('active');
-            // Implementaremos la lógica de likes después
-            alert('Implementar lógica de likes para publicación ' + publicacionId);
+        function toggleFavorito(publicacionId, button) {
+            fetch(`/inicio/api/favoritos/${publicacionId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'added') {
+                    button.classList.remove('inactive');
+                    button.classList.add('active');
+                } else if (data.status === 'removed') {
+                    button.classList.remove('active');
+                    button.classList.add('inactive');
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
 
         // Función para mostrar comentarios

@@ -8,4 +8,6 @@ urlpatterns = [
     path('mis-ventas/', views.mis_ventas_view, name='mis_ventas'),
     path('mis-alquileres/', views.mis_alquileres_view, name='mis_alquileres'),
     path('notificaciones/', views.notificaciones_view, name='notificaciones'),
+    path('api/favoritos/<int:publicacion_id>/', views.toggle_favorito, name='toggle_favorito'),
+    path('mis-favoritos/', views.ver_favoritos, name='ver_favoritos'),  # /inicio/mis-favoritos/
 ]
