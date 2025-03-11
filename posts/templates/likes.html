@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Likes - R-Vístete{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-thumbs-up text-primary"></i> Mis Likes</h2>
+    
+    {% if likes %}
+    <div class="row">
+        {% for like in likes %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="{{ like.publicacion.imagen_url }}" class="card-img-top" alt="{{ like.publicacion.titulo }}" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ like.publicacion.titulo }}</h5>
+                    <p class="card-text">{{ like.publicacion.descripcion|truncatechars:100 }}</p>
+                    <p class="text-muted">
+                        <small>Like dado el {{ like.fecha_like|date:"d/m/Y H:i" }}</small>
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="/inicio/publicacion/{{ like.publicacion.id }}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> Ver Publicación
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4">
+        <i class="fas fa-info-circle"></i> Aún no has dado like a ninguna publicación.
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

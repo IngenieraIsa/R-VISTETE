@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Sum, Count, Q
-from .models import Publicacion, Comentario, Venta, Alquiler, Favorito
+from .models import Publicacion, Comentario, Venta, Alquiler, Favorito, Like
 from users.models import Usuario
 from django.utils import timezone
 import json
@@ -35,12 +35,22 @@ def inicio_view(request):
         favoritos = Favorito.objects.filter(usuario=usuario)
         favoritos_ids = favoritos.values_list('publicacion_id', flat=True)
         
+        # Obtener los IDs de las publicaciones con like del usuario
+        likes = Like.objects.filter(usuario=usuario)
+        likes_ids = likes.values_list('publicacion_id', flat=True)
+        
+        # Obtener el conteo de likes para cada publicación
+        for publicacion in publicaciones:
+            publicacion.likes_count = Like.objects.filter(publicacion=publicacion).count()
+        
         context = {
             'publicaciones': publicaciones,
             'usuario': usuario,
             'nombre_usuario': usuario.nombre,
             'favoritos': list(favoritos_ids),
-            'favoritos_count': favoritos.count()
+            'favoritos_count': favoritos.count(),
+            'likes': list(likes_ids),
+            'likes_count': likes.count()
         }
         print("Rendering inicio.html with context")
         return render(request, 'inicio.html', context)
@@ -314,6 +324,63 @@ def ver_favoritos(request):
             'favoritos_count': favoritos.count()
         }
         return render(request, 'favoritos.html', context)
+    except Usuario.DoesNotExist:
+        request.session.flush()
+        return redirect('/usuarios/login/')
+
+@require_http_methods(["POST"])
+def toggle_like(request, publicacion_id):
+    try:
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
+            
+        usuario = Usuario.objects.get(id=usuario_id)
+        publicacion = Publicacion.objects.get(id=publicacion_id)
+        
+        # Verificar si ya existe el like
+        like = Like.objects.filter(usuario=usuario, publicacion=publicacion).first()
+        
+        if like:
+            # Si existe, lo eliminamos
+            like.delete()
+            return JsonResponse({
+                'status': 'removed',
+                'message': 'Like removido',
+                'likes_count': Like.objects.filter(publicacion=publicacion).count()
+            })
+        else:
+            # Si no existe, lo creamos
+            Like.objects.create(usuario=usuario, publicacion=publicacion)
+            return JsonResponse({
+                'status': 'added',
+                'message': 'Like agregado',
+                'likes_count': Like.objects.filter(publicacion=publicacion).count()
+            })
+            
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'error': 'Publicación no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def ver_likes(request):
+    # Verificar si el usuario está autenticado
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        return redirect('/usuarios/login/')
+    
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        # Obtener todas las publicaciones que el usuario ha dado like
+        likes = Like.objects.filter(usuario=usuario).select_related('publicacion')
+        
+        context = {
+            'likes': likes,
+            'usuario': usuario,
+            'nombre_usuario': usuario.nombre,
+            'likes_count': likes.count()
+        }
+        return render(request, 'likes.html', context)
     except Usuario.DoesNotExist:
         request.session.flush()
         return redirect('/usuarios/login/')

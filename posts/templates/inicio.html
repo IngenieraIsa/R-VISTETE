@@ -29,6 +29,28 @@
         .favorite-btn.inactive {
             color: #6c757d;
         }
+        .like-btn {
+            border: none;
+            background: none;
+            color: #007bff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 10px;
+        }
+        .like-btn:hover {
+            transform: scale(1.1);
+        }
+        .like-btn.active {
+            color: #007bff;
+        }
+        .like-btn.inactive {
+            color: #6c757d;
+        }
+        .likes-count {
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -121,10 +143,17 @@
                     <div class="post-content">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5>{{ publicacion.titulo }}</h5>
-                            <button class="favorite-btn {% if publicacion.id in favoritos %}active{% else %}inactive{% endif %}" 
-                                    onclick="toggleFavorito({{ publicacion.id }}, this)">
-                                <i class="fas fa-heart"></i>
-                            </button>
+                            <div>
+                                <button class="like-btn {% if publicacion.id in likes %}active{% else %}inactive{% endif %}" 
+                                        onclick="toggleLike({{ publicacion.id }}, this)">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span class="likes-count">{{ publicacion.likes_count }}</span>
+                                </button>
+                                <button class="favorite-btn {% if publicacion.id in favoritos %}active{% else %}inactive{% endif %}" 
+                                        onclick="toggleFavorito({{ publicacion.id }}, this)">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
                         </div>
             <p>{{ publicacion.descripcion }}</p>
                         <p class="price-tag">$ {{ publicacion.precio }}</p>
@@ -485,6 +514,28 @@
             .catch(error => console.error('Error:', error));
         }
 
+        function toggleLike(publicacionId, button) {
+            fetch(`/inicio/api/likes/${publicacionId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'added') {
+                    button.classList.remove('inactive');
+                    button.classList.add('active');
+                } else if (data.status === 'removed') {
+                    button.classList.remove('active');
+                    button.classList.add('inactive');
+                }
+                // Actualizar el contador de likes
+                button.querySelector('.likes-count').textContent = data.likes_count;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
         // Función para mostrar comentarios
         function mostrarComentarios(publicacionId) {
             publicacionActual = publicacionId;
@@ -494,7 +545,7 @@
             comentariosLista.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
             
             // Cargar comentarios
-            fetch(`/api/comentarios/${publicacionId}/`)
+            fetch(`/inicio/api/comentarios/${publicacionId}/`)
                 .then(response => response.json())
                 .then(comentarios => {
                     comentariosLista.innerHTML = '';
@@ -550,7 +601,7 @@
             submitButton.disabled = true;
             submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Publicando...';
 
-            fetch('/api/comentarios/crear/', {
+            fetch('/inicio/api/comentarios/crear/', {
                 method: 'POST',
                 body: formData,
                 headers: {

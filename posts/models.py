@@ -32,16 +32,16 @@ class Compra(models.Model):
         return f"Compra de {self.publicacion.titulo} por {self.usuario.nombre}"
 
 class Like(models.Model):
-    id = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='usuario_id')
-    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE, db_column='publicacion_id')
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE)
     fecha_like = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'likes'
+        unique_together = ('usuario', 'publicacion')
 
     def __str__(self):
-        return f"Like de {self.usuario.nombre} en {self.publicacion.titulo}"
+        return f"{self.usuario.nombre} liked {self.publicacion.titulo}"
 
 class Comentario(models.Model):
     id = models.AutoField(primary_key=True)

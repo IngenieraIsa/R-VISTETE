@@ -185,6 +185,14 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if '/inicio/mis-likes' in request.path %}active{% endif %}" href="/inicio/mis-likes/">
+                            <i class="fas fa-thumbs-up text-primary"></i> Likes
+                            {% if likes_count %}
+                            <span class="badge bg-primary rounded-pill">{{ likes_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/inicio/mensajes">
                             <i class="fas fa-envelope"></i> Mensajes
                         </a>

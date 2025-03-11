@@ -10,4 +10,6 @@ urlpatterns = [
     path('notificaciones/', views.notificaciones_view, name='notificaciones'),
     path('api/favoritos/<int:publicacion_id>/', views.toggle_favorito, name='toggle_favorito'),
     path('mis-favoritos/', views.ver_favoritos, name='ver_favoritos'),  # /inicio/mis-favoritos/
+    path('api/likes/<int:publicacion_id>/', views.toggle_like, name='toggle_like'),
+    path('mis-likes/', views.ver_likes, name='ver_likes'),
 ]
