@@ -28,8 +28,14 @@ def inicio_view(request):
         usuario = Usuario.objects.get(id=usuario_id)
         print("Usuario encontrado:", usuario.nombre)
         
-        # Obtener las publicaciones
+        # Obtener las publicaciones con sus comentarios
         publicaciones = Publicacion.objects.all().order_by('-fecha_publicacion')
+        
+        # Obtener los comentarios para cada publicación
+        for publicacion in publicaciones:
+            publicacion.comentarios = Comentario.objects.filter(
+                publicacion=publicacion
+            ).select_related('usuario').order_by('fecha_comentario')
         
         # Obtener los IDs de las publicaciones favoritas del usuario
         favoritos = Favorito.objects.filter(usuario=usuario)
@@ -63,22 +69,31 @@ def inicio_view(request):
         request.session.flush()
         return redirect('/usuarios/login/')
 
-@login_required
+@require_http_methods(["GET"])
 def get_comentarios(request, publicacion_id):
     try:
-        comentarios = Comentario.objects.filter(publicacion_id=publicacion_id).order_by('-fecha_comentario')
-        comentarios_data = []
+        # Verificar si el usuario está autenticado
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
+            
+        # Obtener los comentarios de la publicación
+        comentarios = Comentario.objects.filter(
+            publicacion_id=publicacion_id
+        ).select_related('usuario').order_by('-fecha_comentario')
         
+        comentarios_data = []
         for comentario in comentarios:
             comentarios_data.append({
                 'id': comentario.id,
-                'usuario_nombre': f"{comentario.usuario.nombre} {comentario.usuario.apellido}",
+                'usuario_nombre': comentario.usuario.nombre,
                 'comentario': comentario.comentario,
-                'fecha_comentario': comentario.fecha_comentario.isoformat()
+                'fecha_comentario': comentario.fecha_comentario.strftime('%d/%m/%Y %H:%M')
             })
         
         return JsonResponse(comentarios_data, safe=False)
     except Exception as e:
+        print("Error al obtener comentarios:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
@@ -384,3 +399,43 @@ def ver_likes(request):
     except Usuario.DoesNotExist:
         request.session.flush()
         return redirect('/usuarios/login/')
+
+@require_http_methods(["POST"])
+def agregar_comentario(request, publicacion_id):
+    try:
+        # Verificar si el usuario está autenticado
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
+            
+        # Obtener el usuario y la publicación
+        usuario = Usuario.objects.get(id=usuario_id)
+        publicacion = Publicacion.objects.get(id=publicacion_id)
+        
+        # Obtener el comentario del cuerpo de la petición
+        data = json.loads(request.body)
+        comentario_texto = data.get('comentario')
+        
+        if not comentario_texto:
+            return JsonResponse({'error': 'El comentario no puede estar vacío'}, status=400)
+            
+        # Crear el comentario
+        comentario = Comentario.objects.create(
+            usuario=usuario,
+            publicacion=publicacion,
+            comentario=comentario_texto
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Comentario agregado',
+            'usuario_nombre': usuario.nombre,
+            'comentario': comentario_texto,
+            'fecha': comentario.fecha_comentario.strftime('%d/%m/%Y %H:%M')
+        })
+            
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'error': 'Publicación no encontrada'}, status=404)
+    except Exception as e:
+        print("Error al agregar comentario:", str(e))
+        return JsonResponse({'error': str(e)}, status=500)

@@ -51,6 +51,28 @@
             font-size: 0.9rem;
             margin-left: 5px;
         }
+        .comments-section {
+            border-top: 1px solid #dee2e6;
+            padding-top: 1rem;
+        }
+        .comment {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+        .comment-form input {
+            border-radius: 1.5rem;
+            padding-left: 1rem;
+        }
+        .comment-form button {
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -158,6 +180,30 @@
             <p>{{ publicacion.descripcion }}</p>
                         <p class="price-tag">$ {{ publicacion.precio }}</p>
                         <small class="text-muted">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y H:i" }}</small>
+                        <div class="comments-section mt-3">
+                            <h6><i class="fas fa-comments"></i> Comentarios</h6>
+                            <div class="comments-list">
+                                {% for comentario in publicacion.comentarios %}
+                                <div class="comment mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>{{ comentario.usuario.nombre }}</strong>
+                                        <small class="text-muted">{{ comentario.fecha_comentario|date:"d/m/Y H:i" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ comentario.comentario }}</p>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted">No hay comentarios aún.</p>
+                                {% endfor %}
+                            </div>
+                            <div class="comment-form mt-3">
+                                <form onsubmit="event.preventDefault(); addComment({{ publicacion.id }}, this);" class="d-flex">
+                                    <input type="text" class="form-control me-2" placeholder="Escribe un comentario..." required>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                     <div class="action-buttons">
                         <button class="btn btn-primary" onclick="comprar({{ publicacion.id }})">
@@ -334,16 +380,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="comentarios-lista mb-4">
-                        <!-- Los comentarios se cargarán aquí dinámicamente -->
+                    <div class="alert alert-danger" id="errorComentarios" style="display: none;">
+                        Error al cargar los comentarios. Por favor, intenta de nuevo más tarde.
                     </div>
-                    <hr>
-                    <form id="formComentario" class="mt-3">
+                    <div class="comentarios-lista">
+                        <!-- Los comentarios se cargarán aquí -->
+                    </div>
+                    <form id="formComentarioModal" class="mt-3">
                         <div class="mb-3">
-                            <label for="nuevoComentario" class="form-label">Agregar un comentario</label>
-                            <textarea class="form-control" id="nuevoComentario" rows="3" required></textarea>
+                            <textarea class="form-control" placeholder="Escribe un comentario..." rows="2" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Publicar Comentario</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Publicar
+                        </button>
                     </form>
                 </div>
             </div>
@@ -538,19 +587,34 @@
 
         // Función para mostrar comentarios
         function mostrarComentarios(publicacionId) {
-            publicacionActual = publicacionId;
-            
-            // Limpiar lista de comentarios
             const comentariosLista = document.querySelector('.comentarios-lista');
-            comentariosLista.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+            const errorDiv = document.getElementById('errorComentarios');
+            
+            // Mostrar spinner de carga
+            comentariosLista.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            `;
+            errorDiv.style.display = 'none';
             
             // Cargar comentarios
-            fetch(`/inicio/api/comentarios/${publicacionId}/`)
-                .then(response => response.json())
+            fetch(`/inicio/api/comentarios/get/${publicacionId}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar comentarios');
+                    return response.json();
+                })
                 .then(comentarios => {
                     comentariosLista.innerHTML = '';
+                    
                     if (comentarios.length === 0) {
-                        comentariosLista.innerHTML = '<p class="text-muted text-center">No hay comentarios aún. ¡Sé el primero en comentar!</p>';
+                        comentariosLista.innerHTML = `
+                            <div class="text-center py-4">
+                                <p class="text-muted mb-0">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+                            </div>
+                        `;
                     } else {
                         comentarios.forEach(comentario => {
                             const fecha = new Date(comentario.fecha_comentario).toLocaleDateString('es-ES', {
@@ -562,76 +626,99 @@
                             });
                             
                             comentariosLista.innerHTML += `
-                                <div class="comentario mb-3">
-                                    <div class="d-flex align-items-start">
-                                        <img src="${comentario.usuario_foto || '/static/posts/img/default-avatar.png'}" alt="" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="mb-1">${comentario.usuario_nombre}</h6>
-                                            <p class="mb-1">${comentario.comentario}</p>
-                                            <small class="text-muted">${fecha}</small>
-                                        </div>
+                                <div class="comment mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>${comentario.usuario_nombre}</strong>
+                                        <small class="text-muted">${fecha}</small>
                                     </div>
+                                    <p class="mb-1">${comentario.comentario}</p>
                                 </div>
                             `;
                         });
                     }
+                    
+                    // Configurar el formulario para el publicacionId actual
+                    const form = document.getElementById('formComentarioModal');
+                    form.onsubmit = function(e) {
+                        e.preventDefault();
+                        const textarea = this.querySelector('textarea');
+                        const comentario = textarea.value.trim();
+                        
+                        if (!comentario) return;
+                        
+                        const submitBtn = this.querySelector('button[type="submit"]');
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Publicando...';
+                        
+                        fetch(`/inicio/api/comentarios/agregar/${publicacionId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken'),
+                            },
+                            body: JSON.stringify({ comentario: comentario })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                // Agregar el nuevo comentario a la lista
+                                const noComments = comentariosLista.querySelector('.text-muted');
+                                if (noComments) {
+                                    comentariosLista.innerHTML = '';
+                                }
+                                
+                                comentariosLista.insertAdjacentHTML('afterbegin', `
+                                    <div class="comment mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>${data.usuario_nombre}</strong>
+                                            <small class="text-muted">${data.fecha}</small>
+                                        </div>
+                                        <p class="mb-1">${data.comentario}</p>
+                                    </div>
+                                `);
+                                
+                                textarea.value = '';
+                                
+                                // Actualizar también la lista de comentarios en la publicación
+                                const publicacionComments = document.querySelector(`#publicacion-${publicacionId} .comments-list`);
+                                if (publicacionComments) {
+                                    const noCommentsMsg = publicacionComments.querySelector('.text-muted');
+                                    if (noCommentsMsg) {
+                                        noCommentsMsg.remove();
+                                    }
+                                    
+                                    publicacionComments.insertAdjacentHTML('afterbegin', `
+                                        <div class="comment mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <strong>${data.usuario_nombre}</strong>
+                                                <small class="text-muted">${data.fecha}</small>
+                                            </div>
+                                            <p class="mb-1">${data.comentario}</p>
+                                        </div>
+                                    `);
+                                }
+                            } else {
+                                alert('Error al publicar el comentario: ' + (data.error || 'Error desconocido'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
+                        })
+                        .finally(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publicar';
+                        });
+                    };
                 })
                 .catch(error => {
-                    comentariosLista.innerHTML = '<div class="alert alert-danger">Error al cargar los comentarios. Por favor, intenta de nuevo más tarde.</div>';
                     console.error('Error:', error);
+                    errorDiv.style.display = 'block';
+                    comentariosLista.innerHTML = '';
                 });
             
             modalComentarios.show();
         }
-
-        // Manejar envío de nuevo comentario
-        document.getElementById('formComentario').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const comentario = document.getElementById('nuevoComentario').value;
-            if (!comentario.trim()) return;
-
-            const formData = new FormData();
-            formData.append('comentario', comentario);
-            formData.append('publicacion_id', publicacionActual);
-
-            // Mostrar indicador de carga
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Publicando...';
-
-            fetch('/inicio/api/comentarios/crear/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                credentials: 'same-origin'  // Importante para las cookies
-            })
-            .then(response => response.json().then(data => ({status: response.status, data: data})))
-            .then(({status, data}) => {
-                if (status === 200 && data.success) {
-                    // Limpiar el formulario y recargar comentarios
-                    document.getElementById('nuevoComentario').value = '';
-                    mostrarComentarios(publicacionActual);
-                } else {
-                    // Mostrar mensaje de error específico
-                    const mensaje = data.error || 'Error al publicar el comentario. Por favor, intenta de nuevo.';
-                    alert(mensaje);
-                    console.error('Error:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
-            })
-            .finally(() => {
-                // Restaurar el botón
-                submitButton.disabled = false;
-                submitButton.textContent = originalText;
-            });
-        });
 
         // Función auxiliar para obtener el token CSRF
         function getCookie(name) {
@@ -647,6 +734,58 @@
                 }
             }
             return cookieValue;
+        }
+
+        function addComment(publicacionId, form) {
+            const input = form.querySelector('input');
+            const comentario = input.value.trim();
+            
+            if (!comentario) return;
+            
+            const submitBtn = form.querySelector('button');
+            submitBtn.disabled = true;
+            
+            fetch(`/inicio/api/comentarios/agregar/${publicacionId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ comentario: comentario })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Crear el nuevo elemento de comentario
+                    const commentsList = form.closest('.comments-section').querySelector('.comments-list');
+                    const noCommentsMsg = commentsList.querySelector('.text-muted');
+                    if (noCommentsMsg) {
+                        noCommentsMsg.remove();
+                    }
+                    
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment mb-2';
+                    newComment.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <strong>${data.usuario_nombre}</strong>
+                            <small class="text-muted">${data.fecha}</small>
+                        </div>
+                        <p class="mb-1">${data.comentario}</p>
+                    `;
+                    
+                    commentsList.insertBefore(newComment, commentsList.firstChild);
+                    input.value = '';
+                } else {
+                    alert('Error al publicar el comentario: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al publicar el comentario. Por favor, intenta de nuevo.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+            });
         }
     </script>
 </body>
