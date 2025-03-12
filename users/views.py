@@ -23,7 +23,7 @@ def login_view(request):
         
         # Validar que se proporcionaron ambos campos
         if not correo or not contrasena:
-            return render(request, "login.html", {
+            return render(request, "users/login.html", {
                 "error": "Por favor ingresa tanto el correo como la contraseña"
             })
         
@@ -41,24 +41,28 @@ def login_view(request):
                 # Redirigir a la página de inicio usando path absoluto
                 return redirect('/inicio/')
             else:
-                return render(request, "login.html", {
+                return render(request, "users/login.html", {
                     "error": "La contraseña es incorrecta",
                     "correo": correo
                 })
                 
         except Usuario.DoesNotExist:
-            return render(request, "login.html", {
+            return render(request, "users/login.html", {
                 "error": "No existe una cuenta con este correo",
                 "correo": correo
             })
 
-    return render(request, "login.html")
+    return render(request, "users/login.html")
 
-@login_required
 def ver_perfil(request):
+    # Verificar si el usuario está autenticado
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        return redirect('users:login')
+    
     try:
-        # Buscar el usuario por el correo del usuario autenticado
-        usuario = Usuario.objects.get(correo=request.user.email)
+        # Buscar el usuario por ID
+        usuario = Usuario.objects.get(id=usuario_id)
         perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
         
         context = {
@@ -67,15 +71,20 @@ def ver_perfil(request):
             'redes_sociales': json.dumps(perfil.redes_sociales) if perfil.redes_sociales else '{}',
             'intereses': perfil.intereses if perfil.intereses else []
         }
-        return render(request, 'perfil.html', context)
+        return render(request, 'users/perfil.html', context)
     except Usuario.DoesNotExist:
-        return redirect('login')
+        request.session.flush()
+        return redirect('users:login')
 
-@login_required
 def editar_perfil(request):
+    # Verificar si el usuario está autenticado
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        return redirect('users:login')
+    
     try:
-        # Buscar el usuario por el correo del usuario autenticado
-        usuario = Usuario.objects.get(correo=request.user.email)
+        # Buscar el usuario por ID
+        usuario = Usuario.objects.get(id=usuario_id)
         perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
         
         if request.method == 'POST':
@@ -103,7 +112,7 @@ def editar_perfil(request):
             perfil.intereses = intereses
             
             perfil.save()
-            return redirect('ver_perfil')
+            return redirect('users:ver_perfil')
             
         context = {
             'usuario': usuario,
@@ -111,9 +120,10 @@ def editar_perfil(request):
             'redes_sociales': json.dumps(perfil.redes_sociales) if perfil.redes_sociales else '{}',
             'intereses': ','.join(perfil.intereses) if perfil.intereses else ''
         }
-        return render(request, 'editar_perfil.html', context)
+        return render(request, 'users/editar_perfil.html', context)
     except Usuario.DoesNotExist:
-        return redirect('login')
+        request.session.flush()
+        return redirect('users:login')
 
 def logout_view(request):
     # Limpiar la sesión
