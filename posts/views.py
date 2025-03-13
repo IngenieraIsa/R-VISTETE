@@ -8,6 +8,8 @@ from .models import Publicacion, Comentario, Venta, Alquiler, Favorito, Like
 from users.models import Usuario
 from django.utils import timezone
 import json
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 def inicio_view(request):
     # Debug logging
@@ -439,3 +441,67 @@ def agregar_comentario(request, publicacion_id):
     except Exception as e:
         print("Error al agregar comentario:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def publicar_prenda(request):
+    if request.method == 'POST':
+        try:
+            # Obtener el usuario de la sesión
+            usuario_id = request.session.get('usuario_id')
+            if not usuario_id:
+                return JsonResponse({'success': False, 'error': 'Usuario no autenticado'}, status=401)
+
+            # Procesar la imagen
+            imagen = request.FILES.get('imagen')
+            if imagen:
+                # Guardar la imagen y obtener la URL
+                path = default_storage.save(f'prendas/{imagen.name}', ContentFile(imagen.read()))
+                imagen_url = default_storage.url(path)
+            else:
+                return JsonResponse({'success': False, 'error': 'La imagen es obligatoria'}, status=400)
+
+            # Obtener los datos del formulario
+            titulo = request.POST.get('titulo')
+            descripcion = request.POST.get('descripcion')
+            tipo = request.POST.get('tipo')
+            precio = float(request.POST.get('precio', 0))
+            deposito = float(request.POST.get('deposito', 0)) if tipo == 'alquiler' else 0
+
+            # Validaciones
+            if not titulo or not descripcion or not tipo or precio <= 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Por favor completa todos los campos obligatorios'
+                }, status=400)
+
+            if tipo == 'alquiler' and deposito <= 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'El depósito es obligatorio para alquileres'
+                }, status=400)
+
+            # Crear la publicación
+            publicacion = Publicacion.objects.create(
+                usuario_id=usuario_id,
+                titulo=titulo,
+                descripcion=descripcion,
+                imagen_url=imagen_url,
+                precio=precio,
+                tipo=tipo,
+                deposito=deposito,
+                fecha_publicacion=timezone.now()
+            )
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Publicación creada exitosamente',
+                'publicacion_id': publicacion.id
+            })
+        except Exception as e:
+            print(f"Error al crear la publicación: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'Error al crear la publicación'
+            }, status=500)
+
+    return render(request, 'inicio.html')

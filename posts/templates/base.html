@@ -142,6 +142,32 @@
             margin-bottom: 8px;
             color: #c7c7c7;
         }
+        
+        .btn-publish {
+            background-color: #ff4081;
+            color: white;
+            border-radius: 50%;
+            padding: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-publish:hover {
+            background-color: #f50057;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .btn-publish i {
+            margin-right: 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -199,6 +225,11 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
+                    <li class="nav-item me-3">
+                        <a href="#" class="btn btn-publish" title="Publicar Prenda" data-bs-toggle="modal" data-bs-target="#publicarModal">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <img src="{% static 'posts/img/default-avatar.png' %}" class="user-avatar me-2" alt="Perfil">
@@ -241,6 +272,89 @@
     <!-- Contenido principal -->
     {% block content %}{% endblock %}
 
+    <!-- Modal de Publicación -->
+    <div class="modal fade" id="publicarModal" tabindex="-1" aria-labelledby="publicarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="publicarModalLabel">Nueva Publicación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="publicarForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Imagen -->
+                        <div class="form-section">
+                            <label class="form-label">Imagen de la Prenda*</label>
+                            <div class="image-preview empty" id="imagePreview">
+                                <div class="upload-placeholder text-center">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <p class="mt-2">Haz clic para subir una imagen</p>
+                                    <small class="text-muted">o arrastra y suelta aquí</small>
+                                </div>
+                                <img src="" alt="" style="display: none;">
+                            </div>
+                            <input type="file" class="form-control" name="imagen" id="imageInput" accept="image/*" required style="display: none;">
+                        </div>
+
+                        <!-- Título -->
+                        <div class="form-section">
+                            <label class="form-label" for="titulo">Título*</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required 
+                                   placeholder="Ej: Vestido Floral Verano">
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="form-section">
+                            <label class="form-label" for="descripcion">Descripción*</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required
+                                      placeholder="Describe los detalles de tu prenda..."></textarea>
+                        </div>
+
+                        <!-- Tipo de Publicación -->
+                        <div class="form-section">
+                            <label class="form-label">Tipo de Publicación*</label>
+                            <div class="tipo-toggle">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo" id="tipoVenta" value="venta" required>
+                                    <label class="form-check-label" for="tipoVenta">Venta</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo" id="tipoAlquiler" value="alquiler">
+                                    <label class="form-check-label" for="tipoAlquiler">Alquiler</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="form-section">
+                            <label class="form-label" for="precio">Precio*</label>
+                            <div class="precio-input">
+                                <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Depósito (solo visible si es alquiler) -->
+                        <div class="form-section" id="depositoSection" style="display: none;">
+                            <label class="form-label" for="deposito">Depósito de Seguridad</label>
+                            <div class="precio-input">
+                                <input type="number" class="form-control" id="deposito" name="deposito" min="0" step="0.01"
+                                       placeholder="0.00">
+                            </div>
+                            <small class="text-muted">El depósito se devolverá cuando la prenda sea regresada en buen estado</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" form="publicarForm" class="btn btn-primary">Publicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS y Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -263,6 +377,102 @@
             if (!panel.contains(event.target) && !bellIcon.contains(event.target) && panel.classList.contains('show')) {
                 panel.classList.remove('show');
             }
+        });
+
+        // Manejo de la imagen en el modal
+        const imagePreview = document.getElementById('imagePreview');
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = imagePreview.querySelector('img');
+        const uploadPlaceholder = imagePreview.querySelector('.upload-placeholder');
+
+        imagePreview.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', function(e) {
+            handleImageSelection(e.target.files[0]);
+        });
+
+        // Drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            imagePreview.addEventListener(eventName, preventDefaults);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        imagePreview.addEventListener('drop', function(e) {
+            const file = e.dataTransfer.files[0];
+            handleImageSelection(file);
+        });
+
+        function handleImageSelection(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none';
+                    imagePreview.classList.remove('empty');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Manejo del tipo de publicación
+        const tipoVenta = document.getElementById('tipoVenta');
+        const tipoAlquiler = document.getElementById('tipoAlquiler');
+        const depositoSection = document.getElementById('depositoSection');
+        const depositoInput = document.getElementById('deposito');
+
+        function updateTipoUI() {
+            if (tipoAlquiler.checked) {
+                depositoSection.style.display = 'block';
+                depositoInput.required = true;
+            } else {
+                depositoSection.style.display = 'none';
+                depositoInput.required = false;
+                depositoInput.value = '';
+            }
+        }
+
+        tipoVenta.addEventListener('change', updateTipoUI);
+        tipoAlquiler.addEventListener('change', updateTipoUI);
+
+        // Estilo activo para los radio buttons
+        const tipoChecks = document.querySelectorAll('.tipo-toggle .form-check');
+        tipoChecks.forEach(check => {
+            const radio = check.querySelector('input[type="radio"]');
+            radio.addEventListener('change', function() {
+                tipoChecks.forEach(c => c.classList.remove('active'));
+                if (this.checked) {
+                    check.classList.add('active');
+                }
+            });
+        });
+
+        // Manejar el envío del formulario
+        const publicarForm = document.getElementById('publicarForm');
+        publicarForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('/inicio/publicar/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Error al publicar la prenda');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al publicar la prenda');
+            });
         });
     });
 

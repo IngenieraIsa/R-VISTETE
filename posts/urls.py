@@ -13,4 +13,5 @@ urlpatterns = [
     path('api/likes/<int:publicacion_id>/', views.toggle_like, name='toggle_like'),
     path('mis-likes/', views.ver_likes, name='ver_likes'),
     path('api/comentarios/agregar/<int:publicacion_id>/', views.agregar_comentario, name='agregar_comentario'),
+    path('publicar/', views.publicar_prenda, name='publicar_prenda'),
 ]
