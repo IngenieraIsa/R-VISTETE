@@ -292,7 +292,6 @@ def notificaciones_view(request):
 @require_http_methods(["POST"])
 def toggle_favorito(request, publicacion_id):
     try:
-        # Obtener el usuario y la publicación
         usuario_id = request.session.get('usuario_id')
         if not usuario_id:
             return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
@@ -306,16 +305,20 @@ def toggle_favorito(request, publicacion_id):
         if favorito:
             # Si existe, lo eliminamos
             favorito.delete()
+            favoritos_count = Favorito.objects.filter(usuario=usuario).count()
             return JsonResponse({
                 'status': 'removed',
-                'message': 'Eliminado de favoritos'
+                'message': 'Eliminado de favoritos',
+                'favoritos_count': favoritos_count
             })
         else:
             # Si no existe, lo creamos
             Favorito.objects.create(usuario=usuario, publicacion=publicacion)
+            favoritos_count = Favorito.objects.filter(usuario=usuario).count()
             return JsonResponse({
                 'status': 'added',
-                'message': 'Agregado a favoritos'
+                'message': 'Agregado a favoritos',
+                'favoritos_count': favoritos_count
             })
             
     except Publicacion.DoesNotExist:
@@ -361,18 +364,24 @@ def toggle_like(request, publicacion_id):
         if like:
             # Si existe, lo eliminamos
             like.delete()
+            likes_count = Like.objects.filter(publicacion=publicacion).count()
+            user_likes_count = Like.objects.filter(usuario=usuario).count()
             return JsonResponse({
                 'status': 'removed',
                 'message': 'Like removido',
-                'likes_count': Like.objects.filter(publicacion=publicacion).count()
+                'likes_count': likes_count,
+                'user_likes_count': user_likes_count
             })
         else:
             # Si no existe, lo creamos
             Like.objects.create(usuario=usuario, publicacion=publicacion)
+            likes_count = Like.objects.filter(publicacion=publicacion).count()
+            user_likes_count = Like.objects.filter(usuario=usuario).count()
             return JsonResponse({
                 'status': 'added',
                 'message': 'Like agregado',
-                'likes_count': Like.objects.filter(publicacion=publicacion).count()
+                'likes_count': likes_count,
+                'user_likes_count': user_likes_count
             })
             
     except Publicacion.DoesNotExist:
@@ -505,3 +514,28 @@ def publicar_prenda(request):
             }, status=500)
 
     return render(request, 'inicio.html')
+
+@login_required
+def ver_publicacion(request, publicacion_id):
+    try:
+        # Obtener la publicación
+        publicacion = Publicacion.objects.get(id=publicacion_id)
+        
+        # Verificar si el usuario ha dado like
+        usuario_id = request.session.get('usuario_id')
+        tiene_like = Like.objects.filter(usuario_id=usuario_id, publicacion=publicacion).exists()
+        tiene_favorito = Favorito.objects.filter(usuario_id=usuario_id, publicacion=publicacion).exists()
+        
+        # Obtener comentarios
+        comentarios = Comentario.objects.filter(publicacion=publicacion).order_by('-fecha_comentario')
+        
+        context = {
+            'publicacion': publicacion,
+            'tiene_like': tiene_like,
+            'tiene_favorito': tiene_favorito,
+            'comentarios': comentarios,
+        }
+        
+        return render(request, 'posts/ver_publicacion.html', context)
+    except Publicacion.DoesNotExist:
+        return redirect('inicio')

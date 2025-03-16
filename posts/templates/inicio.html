@@ -147,14 +147,41 @@
         align-items: center;
         gap: 0.5rem;
     }
+
+    /* Estilos para los botones de like y favorito */
+    .like-btn.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .favorite-btn.active {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
+    .like-btn:not(.active):hover {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    .favorite-btn:not(.active):hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .like-btn .likes-count {
+        margin-left: 5px;
+        font-size: 0.9rem;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container main-container">
+<div class="container mt-5">
+    {% csrf_token %}
     <div class="row justify-content-center">
         <div class="col-md-8">
-            {% for publicacion in publicaciones %}
+    {% for publicacion in publicaciones %}
             <div class="card mb-4" data-publicacion-id="{{ publicacion.id }}">
                 <img src="{{ publicacion.imagen_url }}" class="card-img-top" alt="{{ publicacion.titulo }}">
                 <div class="card-body">
@@ -173,16 +200,18 @@
                             </button>
                             
                             <!-- Botón de like -->
-                            <button class="btn btn-outline-primary like-btn" data-publicacion-id="{{ publicacion.id }}"
+                            <button class="btn btn-outline-primary like-btn {% if publicacion.id in likes %}active{% endif %}" 
+                                    data-publicacion-id="{{ publicacion.id }}"
                                     onclick="toggleLike({{ publicacion.id }})">
-                                <i class="fas fa-thumbs-up {% if publicacion.id in likes %}text-primary{% endif %}"></i>
+                                <i class="fas fa-thumbs-up {% if publicacion.id in likes %}text-white{% endif %}"></i>
                                 <span class="likes-count">{{ publicacion.likes_count }}</span>
                             </button>
                             
                             <!-- Botón de favoritos -->
-                            <button class="btn btn-outline-danger favorite-btn" data-publicacion-id="{{ publicacion.id }}"
+                            <button class="btn btn-outline-danger favorite-btn {% if publicacion.id in favoritos %}active{% endif %}" 
+                                    data-publicacion-id="{{ publicacion.id }}"
                                     onclick="toggleFavorito({{ publicacion.id }})">
-                                <i class="fas fa-heart {% if publicacion.id in favoritos %}text-danger{% endif %}"></i>
+                                <i class="fas fa-heart {% if publicacion.id in favoritos %}text-white{% endif %}"></i>
                             </button>
 
                             <!-- Botón de comentarios -->
@@ -565,5 +594,97 @@ document.getElementById('fechaInicio').addEventListener('change', function() {
 
 // Establecer fecha mínima para inicio de alquiler
 document.getElementById('fechaInicio').min = new Date().toISOString().split('T')[0];
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleLike(publicacionId) {
+    fetch(`/inicio/api/likes/${publicacionId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const likeBtn = document.querySelector(`button[onclick="toggleLike(${publicacionId})"]`);
+        const likeIcon = likeBtn.querySelector('i');
+        const likesCount = likeBtn.querySelector('.likes-count');
+        
+        if (data.status === 'added') {
+            likeBtn.classList.add('active');
+            likeIcon.classList.add('text-white');
+            if (likesCount) {
+                likesCount.textContent = parseInt(likesCount.textContent || '0') + 1;
+            }
+        } else {
+            likeBtn.classList.remove('active');
+            likeIcon.classList.remove('text-white');
+            if (likesCount) {
+                likesCount.textContent = parseInt(likesCount.textContent || '0') - 1;
+            }
+        }
+        
+        // Actualizar el contador en el navbar
+        const navLikeCount = document.querySelector('.nav-link .badge.bg-primary');
+        if (navLikeCount) {
+            const currentCount = parseInt(navLikeCount.textContent || '0');
+            navLikeCount.textContent = data.status === 'added' ? currentCount + 1 : currentCount - 1;
+            navLikeCount.style.display = navLikeCount.textContent === '0' ? 'none' : 'inline';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Hubo un error al procesar tu like. Por favor, intenta de nuevo.');
+    });
+}
+
+function toggleFavorito(publicacionId) {
+    fetch(`/inicio/api/favoritos/${publicacionId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const favBtn = document.querySelector(`button[onclick="toggleFavorito(${publicacionId})"]`);
+        const favIcon = favBtn.querySelector('i');
+        
+        if (data.status === 'added') {
+            favBtn.classList.add('active');
+            favIcon.classList.add('text-white');
+        } else {
+            favBtn.classList.remove('active');
+            favIcon.classList.remove('text-white');
+        }
+        
+        // Actualizar el contador en el navbar
+        const navFavCount = document.querySelector('.nav-link .badge.bg-danger');
+        if (navFavCount) {
+            const currentCount = parseInt(navFavCount.textContent || '0');
+            navFavCount.textContent = data.status === 'added' ? currentCount + 1 : currentCount - 1;
+            navFavCount.style.display = navFavCount.textContent === '0' ? 'none' : 'inline';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Hubo un error al procesar tu favorito. Por favor, intenta de nuevo.');
+    });
+}
 </script>
 {% endblock %}
