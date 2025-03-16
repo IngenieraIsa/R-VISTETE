@@ -155,70 +155,46 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             {% for publicacion in publicaciones %}
-            <div class="post-card" id="publicacion-{{ publicacion.id }}">
-                <div class="post-header">
-                    {% if publicacion.usuario.foto_perfil %}
-                        <img src="{{ publicacion.usuario.foto_perfil }}" alt="{{ publicacion.usuario.nombre }}" class="user-avatar">
-                    {% else %}
-                        <img src="{% static 'posts/img/default-avatar.png' %}" alt="{{ publicacion.usuario.nombre }}" class="user-avatar">
-                    {% endif %}
-                    <a href="#" class="user-name">{{ publicacion.usuario.nombre }}</a>
-                </div>
-                <img src="{{ publicacion.imagen_url }}" alt="{{ publicacion.titulo }}" class="post-image">
-                <div class="post-content">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">{{ publicacion.titulo }}</h5>
-                        <div class="interaction-buttons">
-                            <button class="like-btn {% if publicacion.id in likes %}active{% else %}inactive{% endif %}" 
-                                    onclick="toggleLike({{ publicacion.id }}, this)">
-                                <i class="fas fa-thumbs-up"></i>
+            <div class="card mb-4" data-publicacion-id="{{ publicacion.id }}">
+                <img src="{{ publicacion.imagen_url }}" class="card-img-top" alt="{{ publicacion.titulo }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ publicacion.titulo }}</h5>
+                    <p class="card-text">{{ publicacion.descripcion }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y H:i" }}</small>
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="mostrarModalCompra({{ publicacion.id }}, 'compra')">
+                                <i class="fas fa-shopping-cart"></i> Comprar
+                            </button>
+                            <button class="btn btn-success" onclick="mostrarModalCompra({{ publicacion.id }}, 'alquiler')">
+                                <i class="fas fa-key"></i> Alquilar
+                            </button>
+                            
+                            <!-- Botón de like -->
+                            <button class="btn btn-outline-primary like-btn" data-publicacion-id="{{ publicacion.id }}"
+                                    onclick="toggleLike({{ publicacion.id }})">
+                                <i class="fas fa-thumbs-up {% if publicacion.id in likes %}text-primary{% endif %}"></i>
                                 <span class="likes-count">{{ publicacion.likes_count }}</span>
                             </button>
-                            <button class="favorite-btn {% if publicacion.id in favoritos %}active{% else %}inactive{% endif %}" 
-                                    onclick="toggleFavorito({{ publicacion.id }}, this)">
-                                <i class="fas fa-heart"></i>
+                            
+                            <!-- Botón de favoritos -->
+                            <button class="btn btn-outline-danger favorite-btn" data-publicacion-id="{{ publicacion.id }}"
+                                    onclick="toggleFavorito({{ publicacion.id }})">
+                                <i class="fas fa-heart {% if publicacion.id in favoritos %}text-danger{% endif %}"></i>
+                            </button>
+
+                            <!-- Botón de comentarios -->
+                            <button class="btn btn-outline-secondary" onclick="mostrarComentarios({{ publicacion.id }})">
+                                <i class="fas fa-comment"></i>
+                                <span class="comentarios-count-{{ publicacion.id }}">
+                                    {{ publicacion.comentarios.count }}
+                                </span>
                             </button>
                         </div>
+                        <strong class="text-success">${{ publicacion.precio }}</strong>
                     </div>
-                    <p class="mb-2">{{ publicacion.descripcion }}</p>
-                    <p class="price-tag mb-2">$ {{ publicacion.precio }}</p>
-                    <small class="text-muted d-block mb-3">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y H:i" }}</small>
-                    
-                    <div class="comments-section">
-                        <h6 class="mb-3"><i class="fas fa-comments"></i> Comentarios</h6>
-                        <div class="comments-list">
-                            {% for comentario in publicacion.comentarios %}
-                            <div class="comment">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <strong>{{ comentario.usuario.nombre }}</strong>
-                                    <small class="text-muted">{{ comentario.fecha_comentario|date:"d/m/Y H:i" }}</small>
-                                </div>
-                                <p class="mb-0">{{ comentario.comentario }}</p>
-                            </div>
-                            {% empty %}
-                            <p class="text-muted">No hay comentarios aún.</p>
-                            {% endfor %}
-                        </div>
-                        <div class="comment-form">
-                            <form onsubmit="event.preventDefault(); addComment({{ publicacion.id }}, this);" class="d-flex gap-2">
-                                <input type="text" class="form-control" placeholder="Escribe un comentario..." required>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="comprar({{ publicacion.id }})">
-                        <i class="fas fa-shopping-cart me-2"></i>Comprar
-                    </button>
-                    <button class="btn btn-success" onclick="alquilar({{ publicacion.id }})">
-                        <i class="fas fa-key me-2"></i>Alquilar
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="mostrarComentarios({{ publicacion.id }})">
-                        <i class="fas fa-comment"></i>
-                    </button>
                 </div>
             </div>
             {% empty %}
@@ -239,8 +215,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="modalCompraDisponible" style="display: none;">
-                    <div class="mb-3">
+                <div id="modalCompraDisponible">
+                    <div class="mb-4">
                         <div class="d-flex align-items-center mb-3">
                             <img id="modalImagenPrenda" src="" alt="Prenda" class="me-3" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
                             <div>
@@ -249,7 +225,126 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Formulario de compra/alquiler -->
+                    <form id="formCompraAlquiler">
+                        <input type="hidden" id="modalPublicacionId">
+                        <input type="hidden" id="modalTipoOperacion">
+
+                        <!-- Campos para alquiler -->
+                        <div id="camposAlquiler" style="display: none;">
+                            <div class="mb-3">
+                                <label for="fechaInicio" class="form-label">Fecha de inicio</label>
+                                <input type="date" class="form-control" id="fechaInicio" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fechaFin" class="form-label">Fecha de devolución</label>
+                                <input type="date" class="form-control" id="fechaFin" required>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Se requiere un depósito de seguridad que será devuelto al regresar la prenda en buen estado.
+                            </div>
+                        </div>
+
+                        <!-- Información de envío -->
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección de envío</label>
+                            <textarea class="form-control" id="direccion" rows="2" required></textarea>
+                        </div>
+
+                        <!-- Método de pago -->
+                        <div class="mb-3">
+                            <label class="form-label">Método de pago</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="metodoPago" id="pagoTarjeta" value="tarjeta" checked>
+                                    <label class="form-check-label" for="pagoTarjeta">
+                                        <i class="fas fa-credit-card"></i> Tarjeta
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="metodoPago" id="pagoPaypal" value="paypal">
+                                    <label class="form-check-label" for="pagoPaypal">
+                                        <i class="fab fa-paypal"></i> PayPal
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de costos -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Resumen</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal:</span>
+                                    <span id="subtotal"></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Envío:</span>
+                                    <span>$5.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2" id="depositoRow" style="display: none;">
+                                    <span>Depósito:</span>
+                                    <span id="deposito"></span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total:</strong>
+                                    <strong id="total"></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formCompraAlquiler" class="btn btn-primary">
+                    <i class="fas fa-lock me-1"></i>
+                    <span id="btnAccionTexto">Pagar ahora</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Comentarios -->
+<div class="modal fade" id="comentariosModal" tabindex="-1" aria-labelledby="comentariosModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="comentariosModalLabel">Comentarios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Spinner de carga -->
+                <div id="loadingSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+
+                <!-- Alerta de error -->
+                <div id="errorAlert" class="alert alert-danger" style="display: none;" role="alert">
+                    Error al cargar los comentarios
+                </div>
+
+                <!-- Lista de comentarios -->
+                <div id="comentariosList" class="list-group list-group-flush">
+                    <!-- Los comentarios se cargarán aquí dinámicamente -->
+                </div>
+
+                <!-- Formulario para nuevo comentario -->
+                <form id="comentarioForm" class="mt-3">
+                    <div class="input-group">
+                        <input type="text" id="comentarioInput" class="form-control" 
+                               placeholder="Escribe un comentario..." required>
+                        <button class="btn btn-primary" type="submit" id="enviarComentario">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -258,6 +353,217 @@
 
 {% block extra_js %}
 <script>
-// Aquí va todo el JavaScript existente
+let currentPublicacionId = null;
+const comentariosModal = new bootstrap.Modal(document.getElementById('comentariosModal'));
+
+function mostrarComentarios(publicacionId) {
+    currentPublicacionId = publicacionId;
+    
+    // Mostrar spinner y ocultar otros elementos
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('errorAlert').style.display = 'none';
+    document.getElementById('comentariosList').innerHTML = '';
+    
+    // Mostrar el modal
+    comentariosModal.show();
+    
+    // Cargar los comentarios
+    fetch(`/inicio/api/comentarios/get/${publicacionId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            const comentariosList = document.getElementById('comentariosList');
+            
+            if (data.length === 0) {
+                comentariosList.innerHTML = `
+                    <div class="text-center text-muted p-3">
+                        <i class="fas fa-comments fa-2x mb-2"></i>
+                        <p>Sé el primero en comentar</p>
+                    </div>`;
+                return;
+            }
+            
+            comentariosList.innerHTML = data.map(comentario => `
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>${comentario.usuario_nombre}</strong>
+                        <small class="text-muted">${comentario.fecha_comentario}</small>
+                    </div>
+                    <p class="mb-1">${comentario.comentario}</p>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('errorAlert').style.display = 'block';
+        });
+}
+
+// Manejar el envío de nuevos comentarios
+document.getElementById('comentarioForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!currentPublicacionId) return;
+
+    const comentarioInput = document.getElementById('comentarioInput');
+    const comentario = comentarioInput.value.trim();
+    if (!comentario) return;
+
+    // Deshabilitar el botón mientras se envía
+    const submitButton = document.getElementById('enviarComentario');
+    submitButton.disabled = true;
+
+    fetch(`/inicio/api/comentarios/agregar/${currentPublicacionId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ comentario: comentario })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Agregar el nuevo comentario al inicio de la lista
+            const comentariosList = document.getElementById('comentariosList');
+            const nuevoComentario = `
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>${data.usuario_nombre}</strong>
+                        <small class="text-muted">${data.fecha}</small>
+                    </div>
+                    <p class="mb-1">${data.comentario}</p>
+                </div>
+            `;
+            
+            if (comentariosList.innerHTML.includes('Sé el primero en comentar')) {
+                comentariosList.innerHTML = nuevoComentario;
+            } else {
+                comentariosList.insertAdjacentHTML('afterbegin', nuevoComentario);
+            }
+
+            // Actualizar el contador de comentarios en la publicación
+            const contadorElement = document.querySelector(`.comentarios-count-${currentPublicacionId}`);
+            const contadorActual = parseInt(contadorElement.textContent);
+            contadorElement.textContent = contadorActual + 1;
+
+            // Limpiar el input
+            comentarioInput.value = '';
+        } else {
+            alert('Error al agregar el comentario');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al agregar el comentario');
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+    });
+});
+
+// Función para mostrar el modal de compra/alquiler
+function mostrarModalCompra(publicacionId, tipo) {
+    // Obtener los datos de la publicación
+    const publicacionCard = document.querySelector(`[data-publicacion-id="${publicacionId}"]`).closest('.card');
+    const imagen = publicacionCard.querySelector('.card-img-top').src;
+    const titulo = publicacionCard.querySelector('.card-title').textContent;
+    const precioTexto = publicacionCard.querySelector('.text-success').textContent;
+    const precio = parseFloat(precioTexto.replace('$', ''));
+
+    // Actualizar el modal con los datos
+    document.getElementById('modalImagenPrenda').src = imagen;
+    document.getElementById('modalTituloPrenda').textContent = titulo;
+    document.getElementById('modalPrecioPrenda').textContent = precioTexto;
+    document.getElementById('modalPublicacionId').value = publicacionId;
+    document.getElementById('modalTipoOperacion').value = tipo;
+
+    // Mostrar/ocultar campos de alquiler
+    const camposAlquiler = document.getElementById('camposAlquiler');
+    const depositoRow = document.getElementById('depositoRow');
+    if (tipo === 'alquiler') {
+        camposAlquiler.style.display = 'block';
+        depositoRow.style.display = 'flex';
+        document.getElementById('deposito').textContent = `$${(precio * 0.5).toFixed(2)}`;
+    } else {
+        camposAlquiler.style.display = 'none';
+        depositoRow.style.display = 'none';
+    }
+
+    // Actualizar subtotal y total
+    document.getElementById('subtotal').textContent = precioTexto;
+    actualizarTotal();
+
+    // Actualizar texto del botón
+    document.getElementById('btnAccionTexto').textContent = tipo === 'compra' ? 'Pagar ahora' : 'Reservar y pagar';
+
+    // Actualizar el título del modal según el tipo
+    const modalTitle = document.querySelector('#modalCompra .modal-title');
+    modalTitle.textContent = tipo === 'compra' ? 'Comprar Prenda' : 'Alquilar Prenda';
+
+    // Mostrar el modal
+    const modalCompra = new bootstrap.Modal(document.getElementById('modalCompra'));
+    modalCompra.show();
+}
+
+// Función para actualizar el total
+function actualizarTotal() {
+    const subtotalTexto = document.getElementById('subtotal').textContent;
+    const subtotal = parseFloat(subtotalTexto.replace('$', ''));
+    const envio = 5.00;
+    let total = subtotal + envio;
+
+    // Agregar depósito si es alquiler
+    if (document.getElementById('modalTipoOperacion').value === 'alquiler') {
+        const depositoTexto = document.getElementById('deposito').textContent;
+        const deposito = parseFloat(depositoTexto.replace('$', ''));
+        total += deposito;
+    }
+
+    document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+}
+
+// Manejar el envío del formulario
+document.getElementById('formCompraAlquiler').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const tipo = document.getElementById('modalTipoOperacion').value;
+    const publicacionId = document.getElementById('modalPublicacionId').value;
+    const direccion = document.getElementById('direccion').value;
+    const metodoPago = document.querySelector('input[name="metodoPago"]:checked').value;
+
+    let data = {
+        publicacion_id: publicacionId,
+        tipo: tipo,
+        direccion: direccion,
+        metodo_pago: metodoPago
+    };
+
+    if (tipo === 'alquiler') {
+        data.fecha_inicio = document.getElementById('fechaInicio').value;
+        data.fecha_fin = document.getElementById('fechaFin').value;
+    }
+
+    // Aquí iría la llamada al backend para procesar la compra/alquiler
+    console.log('Datos del formulario:', data);
+    alert('Funcionalidad en desarrollo. Los datos han sido registrados.');
+    
+    // Cerrar el modal
+    const modalCompra = bootstrap.Modal.getInstance(document.getElementById('modalCompra'));
+    modalCompra.hide();
+});
+
+// Validar fechas de alquiler
+document.getElementById('fechaInicio').addEventListener('change', function() {
+    const fechaInicio = new Date(this.value);
+    const fechaFinInput = document.getElementById('fechaFin');
+    fechaFinInput.min = this.value;
+    
+    if (fechaFinInput.value && new Date(fechaFinInput.value) <= fechaInicio) {
+        fechaFinInput.value = '';
+    }
+});
+
+// Establecer fecha mínima para inicio de alquiler
+document.getElementById('fechaInicio').min = new Date().toISOString().split('T')[0];
 </script>
 {% endblock %}
