@@ -8,47 +8,265 @@
     .edit-profile-container {
         margin-top: 7rem;
         padding-bottom: 3rem;
-    }
-    
-    .edit-profile-card {
-        border: none;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    .edit-profile-card .card-header {
-        background-color: #fff;
-        border-bottom: 1px solid #eee;
-        padding: 1.5rem;
-    }
-    
-    .edit-profile-card .card-body {
-        padding: 2rem;
+        background-color: #f8f9fa;
     }
     
     .form-section {
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     
-    .form-section:last-child {
-        margin-bottom: 0;
+    .form-section:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
     
+    .form-section h4 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px solid #e9ecef;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-section h4 i {
+        margin-right: 0.8rem;
+        color: #ff4081;
+        font-size: 1.2em;
+    }
+
     .form-label {
         font-weight: 500;
+        color: #2c3e50;
         margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label i {
+        margin-right: 0.5rem;
+        color: #ff4081;
+        font-size: 0.9em;
     }
     
-    .input-group {
-        margin-bottom: 1rem;
-    }
-    
-    .input-group-text {
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
         background-color: #f8f9fa;
-        border-color: #dee2e6;
+        color: #2c3e50;
     }
     
-    .btn-action {
-        padding: 0.5rem 1.5rem;
+    .form-control:focus, .form-select:focus {
+        border-color: #ff4081;
+        box-shadow: 0 0 0 0.2rem rgba(255, 64, 129, 0.1);
+        background-color: #fff;
+    }
+
+    .form-control::placeholder {
+        color: #adb5bd;
+        font-size: 0.9rem;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+    
+    .checkbox-item:hover {
+        background-color: #fff;
+        border-color: #ff4081;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        margin-right: 0.8rem;
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 4px;
+        border: 2px solid #ff4081;
+        cursor: pointer;
+    }
+
+    .checkbox-item label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    .color-preview {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        margin-right: 0.8rem;
+        transition: all 0.3s ease;
+    }
+    
+    .checkbox-item:hover .color-preview {
+        transform: scale(1.15);
+        box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    }
+    
+    .help-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+        font-style: italic;
+        padding-left: 0.5rem;
+        border-left: 3px solid #ff4081;
+    }
+    
+    .error-feedback {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: #fff;
+        border-radius: 8px;
+        border-left: 3px solid #dc3545;
+    }
+    
+    .btn-primary {
+        background-color: #ff4081;
+        border-color: #ff4081;
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-primary:hover {
+        background-color: #f50057;
+        border-color: #f50057;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3);
+    }
+    
+    .btn-secondary {
+        background-color: #f8f9fa;
+        border-color: #e9ecef;
+        color: #2c3e50;
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+        color: #2c3e50;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .social-input {
+        position: relative;
+    }
+    
+    .social-input i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ff4081;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .social-input input:focus + i {
+        color: #f50057;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .social-input input {
+        padding-left: 3rem;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        background-color: #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .alert-success {
+        border-left: 4px solid #28a745;
+        color: #155724;
+    }
+
+    .alert-danger {
+        border-left: 4px solid #dc3545;
+        color: #721c24;
+    }
+
+    /* Estilo para campos deshabilitados */
+    .form-control:disabled,
+    .form-control[readonly] {
+        background-color: #e9ecef;
+        opacity: 0.8;
+    }
+
+    /* Animación de carga para el botón submit */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    .btn-loading:after {
+        content: '';
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        border-left-color: transparent;
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: translateY(-50%) rotate(360deg); }
     }
 </style>
 {% endblock %}
@@ -57,121 +275,230 @@
 <div class="container edit-profile-container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card edit-profile-card">
-                <div class="card-header">
-                    <h4 class="mb-0">Editar Perfil</h4>
+            <h2 class="mb-4 text-center" style="color: #2c3e50; font-weight: 600;">
+                <i class="fas fa-user-edit me-2" style="color: #ff4081;"></i>
+                Editar Perfil
+            </h2>
+            
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                    {{ message }}
                 </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {% csrf_token %}
-                        
-                        <div class="form-section">
-                            <h5 class="mb-3">Información Básica</h5>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" name="nombre" value="{{ usuario.nombre }}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Apellido</label>
-                                    <input type="text" class="form-control" name="apellido" value="{{ usuario.apellido }}" required>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Estado</label>
-                                <input type="text" class="form-control" name="estado" value="{{ perfil.estado|default:'' }}" placeholder="¿Qué estás pensando?">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Descripción</label>
-                                <textarea class="form-control" name="descripcion" rows="3" placeholder="Cuéntanos sobre ti">{{ perfil.descripcion|default:'' }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h5 class="mb-3">Información de Contacto</h5>
-                            <div class="mb-3">
-                                <label class="form-label">Teléfono</label>
-                                <input type="tel" class="form-control" name="telefono" value="{{ perfil.telefono|default:'' }}" placeholder="+58 123456789">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Ubicación</label>
-                                <input type="text" class="form-control" name="ubicacion" value="{{ perfil.ubicacion|default:'' }}" placeholder="Ciudad, País">
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h5 class="mb-3">Redes Sociales</h5>
-                            <div class="mb-3">
-                                <label class="form-label">Instagram</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">@</span>
-                                    <input type="text" class="form-control" name="red_instagram" value="{{ perfil.redes_sociales.instagram|default:'' }}" placeholder="usuario">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Twitter</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">@</span>
-                                    <input type="text" class="form-control" name="red_twitter" value="{{ perfil.redes_sociales.twitter|default:'' }}" placeholder="usuario">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Facebook</label>
-                                <input type="url" class="form-control" name="red_facebook" value="{{ perfil.redes_sociales.facebook|default:'' }}" placeholder="URL de tu perfil">
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h5 class="mb-3">Intereses</h5>
-                            <div class="mb-3">
-                                <label class="form-label">Intereses (separados por comas)</label>
-                                <input type="text" class="form-control" name="intereses" value="{{ intereses }}" placeholder="moda, vintage, casual, formal">
-                                <small class="text-muted">Ejemplo: moda, vintage, casual, formal</small>
-                            </div>
-                        </div>
-
-                        <div class="text-end mt-4">
-                            <a href="{% url 'users:ver_perfil' %}" class="btn btn-secondary btn-action me-2">Cancelar</a>
-                            <button type="submit" class="btn btn-primary btn-action">Guardar Cambios</button>
-                        </div>
-                    </form>
-                </div>
+                {% endfor %}
             </div>
+            {% endif %}
+            
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Información Personal -->
+                <div class="form-section">
+                    <h4><i class="fas fa-user"></i>Información Personal</h4>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                            <i class="fas fa-comment-alt"></i>Descripción
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.help_text %}
+                        <div class="help-text">{{ form.descripcion.help_text }}</div>
+                        {% endif %}
+                        {% if form.descripcion.errors %}
+                        <div class="error-feedback">{{ form.descripcion.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.telefono.id_for_label }}" class="form-label">
+                                <i class="fas fa-phone"></i>Teléfono
+                            </label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                            <div class="error-feedback">{{ form.telefono.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.ubicacion.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt"></i>Ubicación
+                            </label>
+                            {{ form.ubicacion }}
+                            {% if form.ubicacion.errors %}
+                            <div class="error-feedback">{{ form.ubicacion.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preferencias de Moda -->
+                <div class="form-section">
+                    <h4><i class="fas fa-tshirt"></i>Preferencias de Moda</h4>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.talla.id_for_label }}" class="form-label">
+                            <i class="fas fa-ruler"></i>Talla
+                        </label>
+                        {{ form.talla }}
+                        {% if form.talla.errors %}
+                        <div class="error-feedback">{{ form.talla.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-palette"></i>Estilos Preferidos
+                        </label>
+                        <div class="checkbox-group">
+                            {% for checkbox in form.estilos_preferidos %}
+                            <div class="checkbox-item">
+                                {{ checkbox }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.estilos_preferidos.errors %}
+                        <div class="error-feedback">{{ form.estilos_preferidos.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-fill-drip"></i>Colores Preferidos
+                        </label>
+                        <div class="checkbox-group">
+                            {% for checkbox in form.colores_preferidos %}
+                            <div class="checkbox-item">
+                                {{ checkbox.tag }}
+                                <div class="color-preview" style="background-color: {{ checkbox.choice_value }};"></div>
+                                <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.colores_preferidos.errors %}
+                        <div class="error-feedback">{{ form.colores_preferidos.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.rango_precio_preferido.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag"></i>Rango de Precio Preferido
+                        </label>
+                        {{ form.rango_precio_preferido }}
+                        {% if form.rango_precio_preferido.errors %}
+                        <div class="error-feedback">{{ form.rango_precio_preferido.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.marcas_favoritas.id_for_label }}" class="form-label">
+                            <i class="fas fa-star"></i>Marcas Favoritas
+                        </label>
+                        {{ form.marcas_favoritas }}
+                        {% if form.marcas_favoritas.help_text %}
+                        <div class="help-text">{{ form.marcas_favoritas.help_text }}</div>
+                        {% endif %}
+                        {% if form.marcas_favoritas.errors %}
+                        <div class="error-feedback">{{ form.marcas_favoritas.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.ocasiones_uso.id_for_label }}" class="form-label">
+                            <i class="fas fa-calendar-alt"></i>Ocasiones de Uso
+                        </label>
+                        {{ form.ocasiones_uso }}
+                        {% if form.ocasiones_uso.help_text %}
+                        <div class="help-text">{{ form.ocasiones_uso.help_text }}</div>
+                        {% endif %}
+                        {% if form.ocasiones_uso.errors %}
+                        <div class="error-feedback">{{ form.ocasiones_uso.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Redes Sociales -->
+                <div class="form-section">
+                    <h4><i class="fas fa-share-alt"></i>Redes Sociales</h4>
+                    <div id="redes-sociales">
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fab fa-instagram"></i>Instagram
+                            </label>
+                            <div class="social-input">
+                                <input type="url" class="form-control" name="instagram" value="{{ perfil.redes_sociales.instagram|default:'' }}" placeholder="URL de Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fab fa-twitter"></i>Twitter
+                            </label>
+                            <div class="social-input">
+                                <input type="url" class="form-control" name="twitter" value="{{ perfil.redes_sociales.twitter|default:'' }}" placeholder="URL de Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fab fa-facebook"></i>Facebook
+                            </label>
+                            <div class="social-input">
+                                <input type="url" class="form-control" name="facebook" value="{{ perfil.redes_sociales.facebook|default:'' }}" placeholder="URL de Facebook">
+                                <i class="fab fa-facebook"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{% url 'users:ver_perfil' %}" class="btn btn-secondary me-md-2">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Validación de formato de teléfono
-    const telefonoInput = document.querySelector('input[name="telefono"]');
-    if (telefonoInput) {
-        telefonoInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9+]/g, '');
-            if (value.length > 15) value = value.slice(0, 15);
-            e.target.value = value;
-        });
-    }
-
-    // Validación de intereses
-    const interesesInput = document.querySelector('input[name="intereses"]');
-    if (interesesInput) {
-        interesesInput.addEventListener('input', function(e) {
-            let intereses = e.target.value.split(',');
-            intereses = intereses.map(i => i.trim()).filter(i => i);
-            if (intereses.length > 10) {
-                intereses = intereses.slice(0, 10);
-                e.target.value = intereses.join(', ');
+    // Inicializar el campo de redes sociales como JSON oculto
+    const redesSocialesInput = document.createElement('input');
+    redesSocialesInput.type = 'hidden';
+    redesSocialesInput.name = 'redes_sociales';
+    document.querySelector('form').appendChild(redesSocialesInput);
+    
+    // Actualizar el JSON de redes sociales antes de enviar el formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const redes = {};
+        ['instagram', 'twitter', 'facebook'].forEach(red => {
+            const valor = document.querySelector(`input[name="${red}"]`).value;
+            if (valor) {
+                redes[red] = valor;
             }
         });
-    }
+        redesSocialesInput.value = JSON.stringify(redes);
+
+        // Añadir clase de carga al botón
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.classList.add('btn-loading');
+    });
+
+    // Mejorar la interacción con los checkboxes
+    document.querySelectorAll('.checkbox-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target !== this.querySelector('input[type="checkbox"]')) {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+            }
+        });
+    });
 });
 </script>
 {% endblock %} 

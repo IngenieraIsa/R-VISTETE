@@ -3,9 +3,12 @@ from django.contrib.auth import login, authenticate
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Usuario, PerfilUsuario
+from posts.models import Publicacion, Venta, Alquiler
 from django.contrib.auth.models import User
 import json
 from django.urls import reverse
+from django.contrib import messages
+from .forms import PerfilForm
 
 def login_view(request):
     # Debug logging
@@ -61,15 +64,18 @@ def ver_perfil(request):
         return redirect('users:login')
     
     try:
-        # Buscar el usuario por ID
+        # Buscar el usuario y su perfil
         usuario = Usuario.objects.get(id=usuario_id)
         perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
         
         context = {
             'usuario': usuario,
             'perfil': perfil,
-            'redes_sociales': json.dumps(perfil.redes_sociales) if perfil.redes_sociales else '{}',
-            'intereses': perfil.intereses if perfil.intereses else []
+            'estadisticas': {
+                'publicaciones': Publicacion.objects.filter(usuario=usuario).count(),
+                'ventas': Venta.objects.filter(vendedor=usuario).count(),
+                'alquileres': Alquiler.objects.filter(cliente=usuario).count()
+            }
         }
         return render(request, 'users/perfil.html', context)
     except Usuario.DoesNotExist:
@@ -83,44 +89,27 @@ def editar_perfil(request):
         return redirect('users:login')
     
     try:
-        # Buscar el usuario por ID
         usuario = Usuario.objects.get(id=usuario_id)
         perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
         
         if request.method == 'POST':
-            # Actualizar datos básicos del usuario
-            usuario.nombre = request.POST.get('nombre', usuario.nombre)
-            usuario.apellido = request.POST.get('apellido', usuario.apellido)
-            usuario.save()
-            
-            # Actualizar datos del perfil
-            perfil.descripcion = request.POST.get('descripcion', '')
-            perfil.estado = request.POST.get('estado', '')
-            perfil.ubicacion = request.POST.get('ubicacion', '')
-            perfil.telefono = request.POST.get('telefono', '')
-            
-            # Procesar redes sociales
-            redes_sociales = {}
-            for red in ['instagram', 'twitter', 'facebook']:
-                if request.POST.get(f'red_{red}'):
-                    redes_sociales[red] = request.POST.get(f'red_{red}')
-            perfil.redes_sociales = redes_sociales
-            
-            # Procesar intereses
-            intereses = request.POST.get('intereses', '').split(',')
-            intereses = [interes.strip() for interes in intereses if interes.strip()]
-            perfil.intereses = intereses
-            
-            perfil.save()
-            return redirect('users:ver_perfil')
-            
-        context = {
-            'usuario': usuario,
-            'perfil': perfil,
-            'redes_sociales': json.dumps(perfil.redes_sociales) if perfil.redes_sociales else '{}',
-            'intereses': ','.join(perfil.intereses) if perfil.intereses else ''
-        }
-        return render(request, 'users/editar_perfil.html', context)
+            form = PerfilForm(request.POST, instance=perfil)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Perfil actualizado exitosamente.')
+                return redirect('users:ver_perfil')
+        else:
+            # Preparar datos iniciales
+            initial_data = {
+                'marcas_favoritas': ', '.join(perfil.marcas_favoritas) if perfil.marcas_favoritas else '',
+                'ocasiones_uso': ', '.join(perfil.ocasiones_uso) if perfil.ocasiones_uso else '',
+            }
+            form = PerfilForm(instance=perfil, initial=initial_data)
+        
+        return render(request, 'users/editar_perfil.html', {
+            'form': form,
+            'usuario': usuario
+        })
     except Usuario.DoesNotExist:
         request.session.flush()
         return redirect('users:login')
