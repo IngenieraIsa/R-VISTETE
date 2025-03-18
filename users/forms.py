@@ -1,6 +1,8 @@
 from django import forms
 from .models import PerfilUsuario
 import json
+from django.contrib.postgres.fields import RangeField
+from psycopg2.extras import NumericRange
 
 class PerfilUsuarioForm(forms.ModelForm):
     TALLAS = [
@@ -37,11 +39,10 @@ class PerfilUsuarioForm(forms.ModelForm):
     ]
 
     RANGOS_PRECIO = [
-        ('0-50', '$0 - $50'),
-        ('51-100', '$51 - $100'),
-        ('101-200', '$101 - $200'),
-        ('201-500', '$201 - $500'),
-        ('501+', 'Más de $500')
+        ('[0,50]', 'Económico (0-50)'),
+        ('[51,150]', 'Medio (51-150)'),
+        ('[151,500]', 'Premium (151-500)'),
+        ('[501,999999]', 'Lujo (500+)'),
     ]
 
     talla = forms.ChoiceField(choices=TALLAS, required=False)
