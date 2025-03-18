@@ -280,24 +280,24 @@
                     <i class="fas fa-comment-alt"></i>
                     <div class="label">Descripción:</div>
                     <div class="value">{{ perfil.descripcion }}</div>
-                </div>
+        </div>
                 {% endif %}
 
-                {% if perfil.telefono %}
+                        {% if perfil.telefono %}
                 <div class="profile-info">
                     <i class="fas fa-phone"></i>
                     <div class="label">Teléfono:</div>
                     <div class="value">{{ perfil.telefono }}</div>
                 </div>
-                {% endif %}
+                        {% endif %}
 
-                {% if perfil.ubicacion %}
+                        {% if perfil.ubicacion %}
                 <div class="profile-info">
                     <i class="fas fa-map-marker-alt"></i>
                     <div class="label">Ubicación:</div>
                     <div class="value">{{ perfil.ubicacion }}</div>
                 </div>
-                {% endif %}
+                        {% endif %}
             </div>
 
             <!-- Preferencias de Moda -->
@@ -381,21 +381,21 @@
             </div>
 
             <!-- Redes Sociales -->
-            {% if perfil.redes_sociales %}
+                    {% if perfil.redes_sociales %}
             <div class="profile-section">
                 <h4><i class="fas fa-share-alt"></i>Redes Sociales</h4>
-                <div class="social-links">
-                    {% if perfil.redes_sociales.instagram %}
+                    <div class="social-links">
+                        {% if perfil.redes_sociales.instagram %}
                     <a href="{{ perfil.redes_sociales.instagram }}" target="_blank" class="social-link">
                         <i class="fab fa-instagram"></i>
-                    </a>
-                    {% endif %}
-                    {% if perfil.redes_sociales.twitter %}
+                        </a>
+                        {% endif %}
+                        {% if perfil.redes_sociales.twitter %}
                     <a href="{{ perfil.redes_sociales.twitter }}" target="_blank" class="social-link">
                         <i class="fab fa-twitter"></i>
-                    </a>
-                    {% endif %}
-                    {% if perfil.redes_sociales.facebook %}
+                        </a>
+                        {% endif %}
+                        {% if perfil.redes_sociales.facebook %}
                     <a href="{{ perfil.redes_sociales.facebook }}" target="_blank" class="social-link">
                         <i class="fab fa-facebook"></i>
                     </a>
@@ -415,11 +415,11 @@
                             {% if publicacion.imagen %}
                             <img src="{{ publicacion.imagen.url }}" class="card-img-top" alt="{{ publicacion.titulo }}">
                             {% endif %}
-                            <div class="card-body">
+                <div class="card-body">
                                 <h5 class="card-title">{{ publicacion.titulo }}</h5>
                                 <p class="card-text">{{ publicacion.descripcion|truncatewords:20 }}</p>
                                 <p class="card-text"><small class="text-muted">${{ publicacion.precio }}</small></p>
-                            </div>
+                        </div>
                         </div>
                     </div>
                     {% endfor %}

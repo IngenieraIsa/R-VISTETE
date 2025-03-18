@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 import json
 from django.urls import reverse
 from django.contrib import messages
-from .forms import PerfilForm
+from .forms import PerfilUsuarioForm
 
 def login_view(request):
     # Debug logging
@@ -93,22 +93,34 @@ def editar_perfil(request):
         perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
         
         if request.method == 'POST':
-            form = PerfilForm(request.POST, instance=perfil)
+            form = PerfilUsuarioForm(request.POST, instance=perfil)
             if form.is_valid():
+                # Procesar las redes sociales
+                redes_sociales = {
+                    'instagram': request.POST.get('instagram', ''),
+                    'twitter': request.POST.get('twitter', ''),
+                    'facebook': request.POST.get('facebook', '')
+                }
+                perfil.redes_sociales = redes_sociales
+                
+                # Guardar el formulario
                 form.save()
                 messages.success(request, 'Perfil actualizado exitosamente.')
                 return redirect('users:ver_perfil')
+            else:
+                messages.error(request, 'Por favor, corrige los errores en el formulario.')
         else:
             # Preparar datos iniciales
             initial_data = {
                 'marcas_favoritas': ', '.join(perfil.marcas_favoritas) if perfil.marcas_favoritas else '',
                 'ocasiones_uso': ', '.join(perfil.ocasiones_uso) if perfil.ocasiones_uso else '',
             }
-            form = PerfilForm(instance=perfil, initial=initial_data)
+            form = PerfilUsuarioForm(instance=perfil, initial=initial_data)
         
         return render(request, 'users/editar_perfil.html', {
             'form': form,
-            'usuario': usuario
+            'usuario': usuario,
+            'perfil': perfil
         })
     except Usuario.DoesNotExist:
         request.session.flush()

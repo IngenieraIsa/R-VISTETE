@@ -2,7 +2,7 @@ from django import forms
 from .models import PerfilUsuario
 import json
 
-class PerfilForm(forms.ModelForm):
+class PerfilUsuarioForm(forms.ModelForm):
     TALLAS = [
         ('XS', 'XS'),
         ('S', 'S'),
@@ -79,27 +79,58 @@ class PerfilForm(forms.ModelForm):
 
     class Meta:
         model = PerfilUsuario
-        fields = ['descripcion', 'telefono', 'ubicacion', 'redes_sociales', 
-                 'talla', 'estilos_preferidos', 'colores_preferidos', 
-                 'rango_precio_preferido', 'marcas_favoritas', 'ocasiones_uso']
+        fields = [
+            'descripcion', 'telefono', 'ubicacion', 'talla',
+            'estilos_preferidos', 'colores_preferidos', 'rango_precio_preferido',
+            'marcas_favoritas', 'ocasiones_uso', 'redes_sociales'
+        ]
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'ubicacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'talla': forms.Select(attrs={'class': 'form-select'}),
+            'rango_precio_preferido': forms.Select(attrs={'class': 'form-select'}),
+            'marcas_favoritas': forms.TextInput(attrs={'class': 'form-control'}),
+            'ocasiones_uso': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Configurar los campos de tipo array como MultipleChoiceField
+        self.fields['estilos_preferidos'] = forms.MultipleChoiceField(
+            choices=self.ESTILOS,
+            required=False,
+            widget=forms.CheckboxSelectMultiple(attrs={'class': 'checkbox-group'})
+        )
+        
+        self.fields['colores_preferidos'] = forms.MultipleChoiceField(
+            choices=self.COLORES,
+            required=False,
+            widget=forms.CheckboxSelectMultiple(attrs={'class': 'checkbox-group'})
+        )
 
     def clean_marcas_favoritas(self):
         marcas = self.cleaned_data.get('marcas_favoritas', '')
-        if marcas:
-            return [marca.strip() for marca in marcas.split(',') if marca.strip()]
-        return []
+        return [marca.strip() for marca in marcas.split(',') if marca.strip()]
 
     def clean_ocasiones_uso(self):
         ocasiones = self.cleaned_data.get('ocasiones_uso', '')
-        if ocasiones:
-            return [ocasion.strip() for ocasion in ocasiones.split(',') if ocasion.strip()]
-        return []
+        return [ocasion.strip() for ocasion in ocasiones.split(',') if ocasion.strip()]
 
     def clean_redes_sociales(self):
-        redes = self.cleaned_data.get('redes_sociales')
-        if isinstance(redes, str):
-            try:
-                return json.loads(redes)
-            except json.JSONDecodeError:
-                return {}
-        return redes or {} 
+        redes = self.cleaned_data.get('redes_sociales', {})
+        if not isinstance(redes, dict):
+            redes = {}
+        return redes
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Asegurarse de que los campos array se guarden correctamente
+        instance.estilos_preferidos = self.cleaned_data.get('estilos_preferidos', [])
+        instance.colores_preferidos = self.cleaned_data.get('colores_preferidos', [])
+        
+        if commit:
+            instance.save()
+        return instance 
