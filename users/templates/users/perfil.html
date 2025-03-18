@@ -174,6 +174,7 @@
     }
 
     .profile-header {
+        position: relative;
         background-color: #fff;
         border-radius: 15px;
         padding: 2rem;
@@ -201,6 +202,11 @@
         margin-bottom: 1.5rem;
     }
 
+    .profile-header-content {
+        position: relative;
+        padding-top: 1rem;
+    }
+
     .btn-edit-profile {
         background-color: #ff4081;
         color: white;
@@ -215,6 +221,7 @@
         border: none;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        margin-top: 1rem;
     }
 
     .btn-edit-profile:hover {
@@ -222,27 +229,90 @@
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3);
+        text-decoration: none;
+    }
+
+    .edit-button-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+
+    .edit-button {
+        color: white;
+        background-color: #ff4081;
+        padding: 10px 30px;
+        border-radius: 25px;
+        border: 2px solid #ff4081;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .edit-button:hover {
+        background-color: white;
+        color: #ff4081;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3);
+        text-decoration: none;
+    }
+
+    .edit-button i {
+        font-size: 1.2rem;
+    }
+
+    .floating-edit-button {
+        position: fixed;
+        top: 100px;
+        right: 30px;
+        z-index: 1000;
+    }
+
+    .edit-button {
+
+        color: white;
+        margin-bottom: 20px;
+        
+    }
+
+    .edit-button:hover {
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(255, 64, 129, 0.4);
+        text-decoration: none;
+    }
+
+    .edit-button i {
+        font-size: 1.5rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Botón flotante de editar -->
+
+
 <div class="container profile-container">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            
             <!-- Cabecera del Perfil -->
             <div class="profile-header">
                 <img src="{% static 'img/default-avatar.png' %}" alt="Foto de perfil" class="profile-avatar">
                 <h2>{{ usuario.nombre }} {{ usuario.apellido }}</h2>
                 <p>{{ usuario.correo }}</p>
-                {% if es_propio_perfil %}
-                <a href="{% url 'users:editar_perfil' %}" class="btn-edit-profile">
-                    <i class="fas fa-edit"></i>
-                    Editar Perfil
-                </a>
-                {% endif %}
+                
             </div>
-
+            
+            <div class="">
+                <a href="{% url 'users:editar_perfil' %}" class="edit-button">
+                    Editar<i class="fas fa-edit"></i>
+                </a>
+            </div>
+            
             <!-- Estadísticas -->
             <div class="stats-container">
                 <div class="stat-card">
@@ -338,9 +408,9 @@
                                 {{ color }}
                             </span>
                             {% endfor %}
-                        </div>
-                    </div>
                 </div>
+            </div>
+        </div>
                 {% endif %}
 
                 {% if perfil.rango_precio_preferido %}
@@ -363,7 +433,7 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
+                        {% endif %}
 
                 {% if perfil.ocasiones_uso %}
                 <div class="profile-info">
@@ -377,7 +447,7 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
+                        {% endif %}
             </div>
 
             <!-- Redes Sociales -->
@@ -398,11 +468,11 @@
                         {% if perfil.redes_sociales.facebook %}
                     <a href="{{ perfil.redes_sociales.facebook }}" target="_blank" class="social-link">
                         <i class="fab fa-facebook"></i>
-                    </a>
-                    {% endif %}
+                        </a>
+                        {% endif %}
                 </div>
-            </div>
-            {% endif %}
+                    </div>
+                    {% endif %}
 
             <!-- Publicaciones -->
             <div class="profile-section">
@@ -414,14 +484,14 @@
                         <div class="card h-100">
                             {% if publicacion.imagen %}
                             <img src="{{ publicacion.imagen.url }}" class="card-img-top" alt="{{ publicacion.titulo }}">
-                            {% endif %}
+                    {% endif %}
                 <div class="card-body">
                                 <h5 class="card-title">{{ publicacion.titulo }}</h5>
                                 <p class="card-text">{{ publicacion.descripcion|truncatewords:20 }}</p>
                                 <p class="card-text"><small class="text-muted">${{ publicacion.precio }}</small></p>
                         </div>
-                        </div>
                     </div>
+                </div>
                     {% endfor %}
                 </div>
                 {% else %}
