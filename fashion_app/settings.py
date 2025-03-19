@@ -91,11 +91,11 @@ WSGI_APPLICATION = 'fashion_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'rvistete',
+        'NAME': 'R-VISTETE',
         'USER': 'postgres',  
-        'PASSWORD': 'postgres',
+        'PASSWORD': 'm3n3s3s1t4s',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 
