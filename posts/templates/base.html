@@ -14,7 +14,7 @@
     <style>
         /* Estilos comunes */
         .navbar-brand i {
-            color: #ff4081;
+            color: green;
         }
         .card {
             border-radius: 15px;
@@ -144,7 +144,6 @@
         }
         
         .btn-publish {
-            background-color: #ff4081;
             color: white;
             border-radius: 50%;
             padding: 8px;
@@ -158,7 +157,7 @@
         }
         
         .btn-publish:hover {
-            background-color: #f50057;
+            background-color: green;
             color: white;
             transform: translateY(-1px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -174,27 +173,27 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/inicio/">
-                <i class="fas fa-tshirt me-2"></i>R-Vístete
+                <img class="logo" src="{% static 'img/logo.png' %}" alt="Logo" width="120" height="120">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/inicio/' %}active{% endif %}" href="/inicio/">
-                            <i class="fas fa-home"></i> Inicio
-                        </a>
-                    </li>
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-store"></i> Mis Publicaciones
+                            <i class="fas fa-store"></i> Mis posts
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/inicio/mis-ventas"><i class="fas fa-shopping-bag"></i> Mis Ventas</a></li>
                             <li><a class="dropdown-item" href="/inicio/mis-alquileres"><i class="fas fa-key"></i> Mis Alquileres</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/inicio/publicar"><i class="fas fa-plus"></i> Publicar Prenda</a></li>
+                            <li class="nav-item me-3">
+                                <a href="#" class="btn btn-success ms-1" title="Publicar Prenda" data-bs-toggle="modal" data-bs-target="#publicarModal">
+                                   Publicar prenda
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -204,17 +203,17 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if '/inicio/mis-favoritos' in request.path %}active{% endif %}" href="/inicio/mis-favoritos/">
-                            <i class="fas fa-heart text-danger"></i> Favoritos
+                            <i class="fas fa-heart"></i> Favoritos
                             {% if favoritos_count %}
-                            <span class="badge bg-danger rounded-pill">{{ favoritos_count }}</span>
+                            <span class="badge bg-success rounded-pill">{{ favoritos_count }}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if '/inicio/mis-likes' in request.path %}active{% endif %}" href="/inicio/mis-likes/">
-                            <i class="fas fa-thumbs-up text-primary"></i> Likes
+                            <i class="fas fa-thumbs-up"></i> Likes
                             {% if likes_count %}
-                            <span class="badge bg-primary rounded-pill">{{ likes_count }}</span>
+                            <span class="badge bg-success rounded-pill">{{ likes_count }}</span>
                             {% endif %}
                         </a>
                     </li>
@@ -225,11 +224,7 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item me-3">
-                        <a href="#" class="btn btn-publish" title="Publicar Prenda" data-bs-toggle="modal" data-bs-target="#publicarModal">
-                            <i class="fas fa-plus"></i>
-                        </a>
-                    </li>
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <img src="{% static 'posts/img/default-avatar.png' %}" class="user-avatar me-2" alt="Perfil">
@@ -251,14 +246,14 @@
                     <li class="nav-item position-relative">
                         <a class="nav-link position-relative" href="#" onclick="toggleNotifications(); return false;">
                             <i class="fas fa-bell"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
                                 3
                                 <span class="visually-hidden">notificaciones no leídas</span>
                             </span>
                         </a>
                         <!-- Panel de Notificaciones estilo Instagram -->
                         <div id="notificationsPanel" class="notifications-panel">
-                            <div class="notification-header">
+                            <div class="notification-header bg-success text-white">
                                 Notificaciones
                             </div>
                             <div class="notifications-empty">
@@ -266,6 +261,7 @@
                                 <p>No tienes notificaciones</p>
                             </div>
                         </div>
+                        
                     </li>
                 </ul>
             </div>

@@ -1,190 +1,69 @@
 /* Estilos para la barra de navegación */
 .navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.6); /* Transparente con un poco de opacidad */
+    backdrop-filter: blur(10px); /* Efecto difuminado */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
 }
 
+/* Logo y marca */
 .navbar-brand {
     font-weight: 600;
     color: #2c3e50 !important;
+    font-size: 1.5rem;
 }
 
+/* Estilos para los enlaces */
 .nav-link {
-    color: #34495e !important;
+    color: #2c3e50 !important;
     font-weight: 500;
     padding: 0.5rem 1rem !important;
     transition: all 0.3s ease;
+    border-radius: 5px;
 }
 
 .nav-link:hover {
-    color: #2c3e50 !important;
-    background-color: rgba(0,0,0,0.05);
-    border-radius: 5px;
+    color: #fff !important;
+    background-color: #A4C3A2; /* Verde del logo */
 }
 
+/* Estado activo */
 .nav-link.active {
-    color: #2c3e50 !important;
-    background-color: rgba(0,0,0,0.05);
-    border-radius: 5px;
+    color: #fff !important;
+    background-color: #A4C3A2;
 }
 
+/* Menú desplegable */
 .dropdown-menu {
+    background-color: rgba(255, 255, 255, 0.9);
     border: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
 }
 
 .dropdown-item {
     padding: 0.5rem 1rem;
     color: #34495e;
-}
-
-.dropdown-item i {
-    margin-right: 0.5rem;
-    width: 20px;
-}
-
-.dropdown-item:hover {
-    background-color: rgba(0,0,0,0.05);
-    color: #2c3e50;
-}
-
-/* Estilos para las tarjetas de publicación */
-.post-card {
-    margin-bottom: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* Estilos para el encabezado de usuario */
-.post-header {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-    object-fit: cover;
-}
-
-.user-name {
-    font-weight: 600;
-    color: #2c3e50;
-    text-decoration: none;
-}
-
-.user-name:hover {
-    color: #34495e;
-}
-
-.post-image {
-    width: 100%;
-    height: 400px;
-    object-fit: cover;
-    border-radius: 10px 10px 0 0;
-}
-
-.action-buttons {
-    padding: 1rem;
-    border-top: 1px solid #eee;
-}
-
-.action-buttons button {
-    margin-right: 0.5rem;
-}
-
-.like-button.active {
-    color: red;
-}
-
-.post-content {
-    padding: 1rem;
-}
-
-.price-tag {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #2c3e50;
-}
-
-/* Estilos para el badge de notificaciones */
-.badge {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
-}
-
-/* Estilos para el modal */
-.modal-content {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.modal-header {
-    border-bottom: 1px solid #eee;
-    padding: 1rem 1.5rem;
-}
-
-.modal-footer {
-    border-top: 1px solid #eee;
-    padding: 1rem 1.5rem;
-}
-
-.modal-title {
-    color: #2c3e50;
-    font-weight: 600;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-/* Estilos para el formulario en el modal */
-.form-label {
-    color: #2c3e50;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
-
-.form-select, .form-control {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 0.75rem;
     transition: all 0.3s ease;
 }
 
-.form-select:focus, .form-control:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+.dropdown-item:hover {
+    background-color: #A4C3A2;
+    color: white;
 }
 
-/* Estilos para los botones del modal */
-.modal .btn {
-    padding: 0.5rem 1.5rem;
-    font-weight: 500;
-    border-radius: 8px;
-}
+/* Navbar responsive */
+@media (max-width: 991px) {
+    .navbar {
+        background: rgba(255, 255, 255, 0.9);
+    }
 
-.modal .btn-primary {
-    background-color: #3498db;
-    border-color: #3498db;
-}
+    .navbar-toggler {
+        border: none;
+        outline: none;
+    }
 
-.modal .btn-primary:hover {
-    background-color: #2980b9;
-    border-color: #2980b9;
+    .navbar-toggler-icon {
+        filter: invert(1);
+    }
 }
-
-.modal .btn-secondary {
-    background-color: #95a5a6;
-    border-color: #95a5a6;
-}
-
-.modal .btn-secondary:hover {
-    background-color: #7f8c8d;
-    border-color: #7f8c8d;
-} 
