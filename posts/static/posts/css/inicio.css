@@ -67,3 +67,40 @@
         filter: invert(1);
     }
 }
+
+/* 📌 Estilos para los Cards de Publicaciones */
+.publicacion-card {
+    max-width: 140px; /* Más pequeño */
+    height: auto; /* Se ajusta automáticamente */
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    overflow: hidden; /* Evita que el contenido sobresalga */
+}
+
+/* 📌 Ajuste de imágenes dentro del Card */
+.publicacion-card img {
+    max-height: 140px; /* Reduce más la altura */
+    width: 50%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* 📌 Ajuste del contenido dentro del Card */
+.publicacion-card .contenido {
+    font-size: 13px; /* Reduce un poco más el tamaño del texto */
+    padding: 4px;
+    text-align: center;
+}
+
+/* 📌 Responsive: Reduce aún más en móviles */
+@media (max-width: 768px) {
+    .publicacion-card {
+        max-width: 200px; /* Cards más pequeños en móviles */
+    }
+
+    .publicacion-card img {
+        max-height: 120px; /* Reduce más la imagen en móviles */
+    }
+}
