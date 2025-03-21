@@ -33,6 +33,11 @@ def inicio_view(request):
         # Obtener las publicaciones con sus comentarios
         publicaciones = Publicacion.objects.all().order_by('-fecha_publicacion')
         
+        # ✅ Convertir arrays de PostgreSQL a listas legibles para la plantilla
+        for publicacion in publicaciones:
+            publicacion.estilo = ", ".join(publicacion.estilo) if publicacion.estilo else "No especificado"
+            publicacion.colores = ", ".join(publicacion.colores) if publicacion.colores else "No especificado"
+
         # Obtener los comentarios para cada publicación
         for publicacion in publicaciones:
             publicacion.comentarios = Comentario.objects.filter(
@@ -62,6 +67,7 @@ def inicio_view(request):
         }
         print("Rendering inicio.html with context")
         return render(request, 'inicio.html', context)
+    
     except Usuario.DoesNotExist as e:
         print("Usuario no existe en la base de datos:", str(e))
         request.session.flush()
@@ -70,6 +76,9 @@ def inicio_view(request):
         print("Error inesperado:", str(e))
         request.session.flush()
         return redirect('/usuarios/login/')
+
+
+
 
 @require_http_methods(["GET"])
 def get_comentarios(request, publicacion_id):
