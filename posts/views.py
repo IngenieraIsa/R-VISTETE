@@ -10,6 +10,9 @@ from django.utils import timezone
 import json
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from recommendations.recommendation_engine import RecommendationEngine
+
+#inicio - publicaciones
 
 def inicio_view(request):
     # Debug logging
@@ -33,11 +36,11 @@ def inicio_view(request):
         # Obtener las publicaciones con sus comentarios
         publicaciones = Publicacion.objects.all().order_by('-fecha_publicacion')
         
-        # ✅ Convertir arrays de PostgreSQL a listas legibles para la plantilla
+        # Convertir arrays a strings para la plantilla
         for publicacion in publicaciones:
             publicacion.estilo = ", ".join(publicacion.estilo) if publicacion.estilo else "No especificado"
             publicacion.colores = ", ".join(publicacion.colores) if publicacion.colores else "No especificado"
-
+        
         # Obtener los comentarios para cada publicación
         for publicacion in publicaciones:
             publicacion.comentarios = Comentario.objects.filter(
@@ -78,7 +81,7 @@ def inicio_view(request):
         return redirect('/usuarios/login/')
 
 
-
+#comentarios
 
 @require_http_methods(["GET"])
 def get_comentarios(request, publicacion_id):
@@ -107,6 +110,7 @@ def get_comentarios(request, publicacion_id):
         print("Error al obtener comentarios:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+#crear comentarios
 @login_required
 @require_http_methods(["POST"])
 def crear_comentario(request):
@@ -154,6 +158,7 @@ def crear_comentario(request):
         print("Error general:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+#ventas
 @login_required(login_url='/users/login/')
 def mis_ventas_view(request):
     try:
@@ -215,6 +220,7 @@ def mis_ventas_view(request):
         # Si el usuario no tiene perfil, redirigir a completar perfil
         return redirect('completar_perfil')
 
+#alquileres
 @login_required(login_url='/users/login/')
 def mis_alquileres_view(request):
     try:
@@ -289,6 +295,7 @@ def mis_alquileres_view(request):
         # Si el usuario no tiene perfil, redirigir a completar perfil
         return redirect('completar_perfil')
 
+#notificaciones
 @login_required
 def notificaciones_view(request):
     # Por ahora, solo renderizamos la plantilla con un mensaje
@@ -298,6 +305,8 @@ def notificaciones_view(request):
     }
     return render(request, 'notificaciones.html', context)
 
+
+#favoritos
 @require_http_methods(["POST"])
 def toggle_favorito(request, publicacion_id):
     try:
@@ -335,6 +344,7 @@ def toggle_favorito(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+#ver favoritos
 def ver_favoritos(request):
     # Verificar si el usuario está autenticado
     usuario_id = request.session.get('usuario_id')
@@ -357,6 +367,7 @@ def ver_favoritos(request):
         request.session.flush()
         return redirect('/usuarios/login/')
 
+#likes
 @require_http_methods(["POST"])
 def toggle_like(request, publicacion_id):
     try:
@@ -398,6 +409,7 @@ def toggle_like(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+#ver likes
 def ver_likes(request):
     # Verificar si el usuario está autenticado
     usuario_id = request.session.get('usuario_id')
@@ -420,6 +432,7 @@ def ver_likes(request):
         request.session.flush()
         return redirect('/usuarios/login/')
 
+#agregar comentarios a las publicaciones
 @require_http_methods(["POST"])
 def agregar_comentario(request, publicacion_id):
     try:
@@ -460,6 +473,7 @@ def agregar_comentario(request, publicacion_id):
         print("Error al agregar comentario:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+#publicar prendas
 @login_required
 def publicar_prenda(request):
     if request.method == 'POST':
@@ -484,9 +498,15 @@ def publicar_prenda(request):
             tipo = request.POST.get('tipo')
             precio = float(request.POST.get('precio', 0))
             deposito = float(request.POST.get('deposito', 0)) if tipo == 'alquiler' else 0
+            
+            # Nuevos campos
+            publico = request.POST.get('publico')
+            talla = request.POST.get('talla')
+            estilos = request.POST.getlist('estilo[]')
+            colores = request.POST.getlist('colores[]')
 
             # Validaciones
-            if not titulo or not descripcion or not tipo or precio <= 0:
+            if not all([titulo, descripcion, tipo, precio, publico, talla, estilos, colores]):
                 return JsonResponse({
                     'success': False,
                     'error': 'Por favor completa todos los campos obligatorios'
@@ -507,6 +527,10 @@ def publicar_prenda(request):
                 precio=precio,
                 tipo=tipo,
                 deposito=deposito,
+                publico=publico,
+                talla=talla,
+                estilo=estilos,
+                colores=colores,
                 fecha_publicacion=timezone.now()
             )
 
@@ -522,8 +546,9 @@ def publicar_prenda(request):
                 'error': 'Error al crear la publicación'
             }, status=500)
 
-    return render(request, 'inicio.html')
+    return render(request, 'publicar.html')
 
+#ver publicaciones
 @login_required
 def ver_publicacion(request, publicacion_id):
     try:
@@ -547,4 +572,31 @@ def ver_publicacion(request, publicacion_id):
         
         return render(request, 'posts/ver_publicacion.html', context)
     except Publicacion.DoesNotExist:
+        return redirect('inicio')
+
+@login_required
+def recomendaciones_view(request):
+    try:
+        usuario = request.user.usuario
+        engine = RecommendationEngine(usuario)
+        
+        # Obtener recomendaciones
+        recomendaciones = engine.generar_recomendaciones()
+        
+        # Obtener análisis de preferencias
+        preferencias = engine.analizar_preferencias_usuario()
+        interacciones = engine.analizar_interacciones()
+        sentimiento = engine.analizar_sentimiento_descripcion()
+        
+        context = {
+            'recomendaciones': recomendaciones,
+            'preferencias': preferencias,
+            'interacciones': interacciones,
+            'sentimiento': sentimiento,
+            'usuario': usuario
+        }
+        
+        return render(request, 'recomendaciones.html', context)
+    except Exception as e:
+        print(f"Error al generar recomendaciones: {str(e)}")
         return redirect('inicio')

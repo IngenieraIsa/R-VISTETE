@@ -32,32 +32,14 @@ class PerfilUsuario(models.Model):
     ubicacion = models.CharField(max_length=200, null=True, blank=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
     redes_sociales = models.JSONField(null=True, blank=True)
-    intereses = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+    intereses = models.CharField(max_length=500, null=True, blank=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     
     # Nuevos campos para preferencias de moda
     talla = models.CharField(max_length=3, choices=TALLAS, null=True, blank=True)
-    estilos_preferidos = ArrayField(
-        models.CharField(max_length=50),
-        null=True,
-        blank=True
-    )
-    colores_preferidos = ArrayField(
-        models.CharField(max_length=7),  # Para códigos de color hex
-        null=True,
-        blank=True
-    )
-    rango_precio_preferido = models.CharField(max_length=20, null=True, blank=True)
-    marcas_favoritas = ArrayField(
-        models.CharField(max_length=100),
-        null=True,
-        blank=True
-    )
-    ocasiones_uso = ArrayField(
-        models.CharField(max_length=100),
-        null=True,
-        blank=True
-    )
+    estilos_preferidos = models.CharField(max_length=500, null=True, blank=True)
+    colores_preferidos = models.CharField(max_length=500, null=True, blank=True)
+    ocasiones_uso = models.CharField(max_length=500, null=True, blank=True)
 
     class Meta:
         db_table = 'perfiles_usuario'

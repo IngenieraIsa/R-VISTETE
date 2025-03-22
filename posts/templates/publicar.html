@@ -105,6 +105,52 @@
     .precio-input input {
         padding-left: 2rem;
     }
+
+    .color-preview {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+
+    .form-check {
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+    }
+
+    .form-check:hover {
+        background-color: #f8f9fa;
+    }
+
+    .form-check-input:checked + .form-check-label {
+        color: #ff4081;
+        font-weight: 500;
+    }
+
+    .form-section .row {
+        margin: 0 -8px;
+    }
+
+    .form-section .col-6 {
+        padding: 0 8px;
+    }
+
+    select.form-control {
+        height: calc(2.5rem + 2px);
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        transition: border-color 0.2s;
+    }
+
+    select.form-control:focus {
+        border-color: #ff4081;
+        box-shadow: 0 0 0 0.2rem rgba(255, 64, 129, 0.25);
+    }
 </style>
 {% endblock %}
 
@@ -144,6 +190,155 @@
                     <label class="form-label" for="descripcion">Descripción*</label>
                     <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required
                               placeholder="Describe los detalles de tu prenda..."></textarea>
+                </div>
+
+                <!-- Público Objetivo -->
+                <div class="form-section">
+                    <label class="form-label">Público Objetivo*</label>
+                    <select class="form-control" name="publico" required>
+                        <option value="">Selecciona el público</option>
+                        <option value="mujer">Mujer</option>
+                        <option value="hombre">Hombre</option>
+                        <option value="niño">Niño</option>
+                        <option value="niña">Niña</option>
+                        <option value="mascota">Mascota</option>
+                    </select>
+                </div>
+
+                <!-- Estilo -->
+                <div class="form-section">
+                    <label class="form-label">Estilo*</label>
+                    <div class="row">
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="estilo[]" value="casual" id="estiloCasual">
+                                <label class="form-check-label" for="estiloCasual">Casual</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="estilo[]" value="formal" id="estiloFormal">
+                                <label class="form-check-label" for="estiloFormal">Formal</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="estilo[]" value="deportivo" id="estiloDeportivo">
+                                <label class="form-check-label" for="estiloDeportivo">Deportivo</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="estilo[]" value="bohemio" id="estiloBohemio">
+                                <label class="form-check-label" for="estiloBohemio">Bohemio</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="estilo[]" value="elegante" id="estiloElegante">
+                                <label class="form-check-label" for="estiloElegante">Elegante</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="estilo[]" value="vintage" id="estiloVintage">
+                                <label class="form-check-label" for="estiloVintage">Vintage</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colores -->
+                <div class="form-section">
+                    <label class="form-label">Colores*</label>
+                    <div class="row">
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="negro" id="colorNegro">
+                                <label class="form-check-label" for="colorNegro">
+                                    <span class="color-preview" style="background-color: black;"></span> Negro
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="blanco" id="colorBlanco">
+                                <label class="form-check-label" for="colorBlanco">
+                                    <span class="color-preview" style="background-color: white; border: 1px solid #ddd;"></span> Blanco
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="azul" id="colorAzul">
+                                <label class="form-check-label" for="colorAzul">
+                                    <span class="color-preview" style="background-color: blue;"></span> Azul
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="rojo" id="colorRojo">
+                                <label class="form-check-label" for="colorRojo">
+                                    <span class="color-preview" style="background-color: red;"></span> Rojo
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="verde" id="colorVerde">
+                                <label class="form-check-label" for="colorVerde">
+                                    <span class="color-preview" style="background-color: green;"></span> Verde
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="amarillo" id="colorAmarillo">
+                                <label class="form-check-label" for="colorAmarillo">
+                                    <span class="color-preview" style="background-color: yellow;"></span> Amarillo
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="rosa" id="colorRosa">
+                                <label class="form-check-label" for="colorRosa">
+                                    <span class="color-preview" style="background-color: pink;"></span> Rosa
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="morado" id="colorMorado">
+                                <label class="form-check-label" for="colorMorado">
+                                    <span class="color-preview" style="background-color: purple;"></span> Morado
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="colores[]" value="floral" id="colorFloral">
+                                <label class="form-check-label" for="colorFloral">
+                                    <span class="color-preview" style="background: linear-gradient(45deg, pink, yellow, green);"></span> Floral
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Talla -->
+                <div class="form-section">
+                    <label class="form-label">Talla*</label>
+                    <select class="form-control" name="talla" required>
+                        <option value="">Selecciona la talla</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                    </select>
                 </div>
 
                 <!-- Tipo de Publicación -->

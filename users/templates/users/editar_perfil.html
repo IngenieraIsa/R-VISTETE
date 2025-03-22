@@ -437,28 +437,9 @@
                         {% endif %}
                         </div>
 
-                    <div class="mb-4">
-                        <label for="{{ form.rango_precio_preferido.id_for_label }}" class="form-label">
-                            <i class="fas fa-tag text-success"></i>Rango de Precio Preferido
-                        </label>
-                        {{ form.rango_precio_preferido }}
-                        {% if form.rango_precio_preferido.errors %}
-                        <div class="error-feedback">{{ form.rango_precio_preferido.errors }}</div>
-                        {% endif %}
-                        </div>
+                    
 
-                    <div class="mb-4">
-                        <label for="{{ form.marcas_favoritas.id_for_label }}" class="form-label">
-                            <i class="fas fa-star text-success"></i>Marcas Favoritas
-                        </label>
-                        {{ form.marcas_favoritas }}
-                        {% if form.marcas_favoritas.help_text %}
-                        <div class="help-text">{{ form.marcas_favoritas.help_text }}</div>
-                        {% endif %}
-                        {% if form.marcas_favoritas.errors %}
-                        <div class="error-feedback">{{ form.marcas_favoritas.errors }}</div>
-                        {% endif %}
-                        </div>
+                    
 
                     <div class="mb-4">
                         <label for="{{ form.ocasiones_uso.id_for_label }}" class="form-label">

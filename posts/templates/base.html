@@ -167,6 +167,36 @@
             margin-right: 0;
             font-size: 0.9rem;
         }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .tag {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .color-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 4px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -346,6 +376,29 @@
                                        placeholder="0.00">
                             </div>
                             <small class="text-muted">El depósito se devolverá cuando la prenda sea regresada en buen estado</small>
+                        </div>
+
+                        <!-- Estilo -->
+                        <div class="form-section">
+                            <label class="form-label">Estilo*</label>
+                            <div class="tag-list">
+                                {% for estilo in publicacion.estilo %}
+                                <span class="tag">{{ estilo }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Colores -->
+                        <div class="form-section">
+                            <label class="form-label">Colores*</label>
+                            <div class="tag-list">
+                                {% for color in publicacion.colores %}
+                                <span class="tag color-tag">
+                                    <div class="color-preview" style="background-color: {{ color }};"></div>
+                                    {{ color }}
+                                </span>
+                                {% endfor %}
+                            </div>
                         </div>
                     </form>
                 </div>

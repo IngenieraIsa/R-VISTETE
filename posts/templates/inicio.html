@@ -181,7 +181,7 @@
     {% csrf_token %}
     <div class="row justify-content-center">
         <div class="col-md-8">
-            
+
     {% for publicacion in publicaciones %}
     
             <div class="card mb-4" data-publicacion-id="{{ publicacion.id }}">
@@ -198,8 +198,8 @@
                     <p class="card-text">{{ publicacion.descripcion }}</p>
                     <p class="card-text">
                         <strong>Público:</strong> {{ publicacion.publico }} <br>
-                        <strong>Estilo:</strong> {{ publicacion.estilo|join:", " }} <br>
-                        <strong>Colores:</strong> {{ publicacion.colores|join:", " }} <br>
+                        <strong>Estilo:</strong> {{ publicacion.estilo }} <br>
+                        <strong>Colores:</strong> {{ publicacion.colores }} <br>
                         <strong>Talla:</strong> {{ publicacion.talla }}
                     </p>
                     <p class="card-text">

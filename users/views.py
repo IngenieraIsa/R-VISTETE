@@ -103,6 +103,14 @@ def editar_perfil(request):
                 }
                 perfil.redes_sociales = redes_sociales
                 
+                # Procesar los campos de preferencias como texto normal
+                estilos = request.POST.getlist('estilos_preferidos')
+                colores = request.POST.getlist('colores_preferidos')
+                
+                perfil.estilos_preferidos = ', '.join(estilos) if estilos else ''
+                perfil.colores_preferidos = ', '.join(colores) if colores else ''
+                perfil.ocasiones_uso = request.POST.get('ocasiones_uso', '')
+                
                 # Guardar el formulario
                 form.save()
                 messages.success(request, 'Perfil actualizado exitosamente.')
@@ -110,12 +118,7 @@ def editar_perfil(request):
             else:
                 messages.error(request, 'Por favor, corrige los errores en el formulario.')
         else:
-            # Preparar datos iniciales
-            initial_data = {
-                'marcas_favoritas': ', '.join(perfil.marcas_favoritas) if perfil.marcas_favoritas else '',
-                'ocasiones_uso': ', '.join(perfil.ocasiones_uso) if perfil.ocasiones_uso else '',
-            }
-            form = PerfilUsuarioForm(instance=perfil, initial=initial_data)
+            form = PerfilUsuarioForm(instance=perfil)
         
         return render(request, 'users/editar_perfil.html', {
             'form': form,
