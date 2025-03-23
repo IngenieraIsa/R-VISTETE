@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Publicar Prenda - R-Vístete{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Publicar Nueva Prenda</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" id="publicarForm">
+                {% csrf_token %}
+                
+                <!-- Título -->
+                <div class="mb-3">
+                    <label for="titulo" class="form-label">Título*</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo" required>
+                </div>
+
+                <!-- Descripción -->
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                </div>
+
+                <!-- Imagen -->
+                <div class="mb-3">
+                    <label for="imagen" class="form-label">Imagen de la prenda</label>
+                    <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                </div>
+
+                <!-- Tipo de Publicación -->
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Publicación*</label>
+                    <select class="form-control" name="tipo" required>
+                        <option value="venta">Venta</option>
+                        <option value="alquiler">Alquiler</option>
+                    </select>
+                </div>
+
+                <!-- Precio -->
+                <div class="mb-3">
+                    <label for="precio" class="form-label">Precio*</label>
+                    <input type="number" class="form-control" id="precio" name="precio" step="0.01" required>
+                </div>
+
+                <!-- Depósito (para alquiler) -->
+                <div class="mb-3" id="depositoContainer" style="display: none;">
+                    <label for="deposito" class="form-label">Depósito de Seguridad</label>
+                    <input type="number" class="form-control" id="deposito" name="deposito" step="0.01">
+                </div>
+
+                <!-- Público -->
+                <div class="mb-3">
+                    <label class="form-label">Público Objetivo*</label>
+                    <select class="form-control" name="publico" required>
+                        <option value="mujer">Mujer</option>
+                        <option value="hombre">Hombre</option>
+                        <option value="niño">Niño</option>
+                        <option value="niña">Niña</option>
+                        <option value="mascota">Mascota</option>
+                    </select>
+                </div>
+
+                <!-- Talla -->
+                <div class="mb-3">
+                    <label class="form-label">Talla*</label>
+                    <select class="form-control" name="talla" required>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+
+                <!-- Estilo -->
+                <div class="mb-3">
+                    <label class="form-label">Estilo*</label>
+                    <select class="form-control" name="estilo[]" multiple required>
+                        <option value="casual">Casual</option>
+                        <option value="formal">Formal</option>
+                        <option value="deportivo">Deportivo</option>
+                        <option value="elegante">Elegante</option>
+                        <option value="vintage">Vintage</option>
+                    </select>
+                    <small class="text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples opciones</small>
+                </div>
+
+                <!-- Colores -->
+                <div class="mb-3">
+                    <label class="form-label">Colores*</label>
+                    <select class="form-control" name="colores[]" multiple required>
+                        <option value="negro">Negro</option>
+                        <option value="blanco">Blanco</option>
+                        <option value="rojo">Rojo</option>
+                        <option value="azul">Azul</option>
+                        <option value="verde">Verde</option>
+                        <option value="amarillo">Amarillo</option>
+                        <option value="rosa">Rosa</option>
+                        <option value="morado">Morado</option>
+                    </select>
+                    <small class="text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples opciones</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Publicar Prenda</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoSelect = document.querySelector('select[name="tipo"]');
+    const depositoContainer = document.getElementById('depositoContainer');
+    const depositoInput = document.getElementById('deposito');
+
+    tipoSelect.addEventListener('change', function() {
+        if (this.value === 'alquiler') {
+            depositoContainer.style.display = 'block';
+            depositoInput.required = true;
+        } else {
+            depositoContainer.style.display = 'none';
+            depositoInput.required = false;
+            depositoInput.value = '';
+        }
+    });
+});
+</script>
+{% endblock %} 

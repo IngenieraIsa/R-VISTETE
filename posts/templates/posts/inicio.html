@@ -1,0 +1,233 @@
+<!-- Botones de acción -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="d-flex gap-2">
+        {% if publicacion.tipo == 'venta' %}
+        <button class="btn btn-sm btn-primary" onclick="mostrarModalCompra({{ publicacion.id }}, 'compra')">
+            <i class="fas fa-shopping-cart"></i> Comprar
+        </button>
+        {% elif publicacion.tipo == 'alquiler' %}
+        <button class="btn btn-sm btn-success" onclick="mostrarModalCompra({{ publicacion.id }}, 'alquiler')">
+            <i class="fas fa-key"></i> Alquilar
+        </button>
+        {% endif %}
+        <button class="btn btn-sm btn-outline-danger {% if publicacion.id in publicaciones_likeadas %}active{% endif %}" 
+                onclick="toggleLike({{ publicacion.id }})">
+            <i class="fas fa-heart"></i>
+            <span class="like-count">{{ publicacion.likes_count }}</span>
+        </button>
+        <button class="btn btn-sm btn-outline-danger {% if publicacion.id in publicaciones_dislikeadas %}active{% endif %}" 
+                onclick="toggleDislike({{ publicacion.id }})">
+            <i class="fas fa-thumbs-down"></i>
+            <span class="dislike-count">{{ publicacion.dislikes_count }}</span>
+        </button>
+        <button class="btn btn-sm btn-outline-primary" onclick="mostrarComentarios({{ publicacion.id }})">
+            <i class="fas fa-comments"></i>
+            <span class="comment-count">{{ publicacion.comentarios_count }}</span>
+        </button>
+    </div>
+    <strong class="text-success">${{ publicacion.precio }}</strong>
+</div>
+
+<style>
+.btn-group {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.btn {
+    margin: 0 5px;
+    border-radius: 20px;
+    padding: 5px 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn i {
+    font-size: 1.1rem;
+}
+
+.dislike-btn {
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.dislike-btn:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.dislike-btn.active {
+    background-color: #6c757d;
+    color: white;
+}
+
+.dislike-btn i {
+    transition: transform 0.2s;
+}
+
+.dislike-btn:hover i {
+    transform: scale(1.1);
+}
+
+.dislikes-count {
+    margin-left: 5px;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.dislike-btn.active .dislikes-count,
+.dislike-btn.active i {
+    color: white;
+}
+
+.btn-like, .btn-dislike {
+    background: none;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.btn-like i {
+    color: #ccc;
+}
+
+.btn-like.active i {
+    color: #ff4081;
+}
+
+.btn-dislike i {
+    color: #ccc;
+}
+
+.btn-dislike.active i {
+    color: #666;
+}
+
+.likes-count, .dislikes-count {
+    font-size: 0.9rem;
+    color: #666;
+    min-width: 20px;
+    text-align: center;
+}
+
+.btn-outline-secondary.dislike-btn {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary.dislike-btn:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-outline-secondary.dislike-btn.active {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-outline-secondary.dislike-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+}
+
+.btn-outline-secondary.dislike-btn:hover i {
+    transform: scale(1.1);
+}
+
+.dislike-btn .dislikes-count {
+    margin-left: 5px;
+    font-size: 0.9rem;
+}
+
+/* Asegurar que los botones estén alineados */
+.btn-group .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem 0.75rem;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Función para manejar likes
+    $('.btn-like').click(function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const publicacionId = btn.data('publicacion-id');
+        
+        $.post(`/posts/like/${publicacionId}/`, function(data) {
+            if (data.success) {
+                if (data.is_liked) {
+                    btn.addClass('active');
+                    $(`.btn-dislike[data-publicacion-id="${publicacionId}"]`).removeClass('active');
+                } else {
+                    btn.removeClass('active');
+                }
+                btn.find('.likes-count').text(data.likes_count);
+            }
+        });
+    });
+
+    // Función para manejar dislikes
+    $('.btn-dislike').click(function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const publicacionId = btn.data('publicacion-id');
+        
+        $.post(`/posts/dislike/${publicacionId}/`, function(data) {
+            if (data.success) {
+                if (data.is_disliked) {
+                    btn.addClass('active');
+                    $(`.btn-like[data-publicacion-id="${publicacionId}"]`).removeClass('active');
+                } else {
+                    btn.removeClass('active');
+                }
+                btn.find('.dislikes-count').text(data.dislikes_count);
+            }
+        });
+    });
+});
+
+function toggleDislike(publicacionId) {
+    fetch(`/posts/dislike/${publicacionId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const dislikeBtn = document.querySelector(`button[onclick="toggleDislike(${publicacionId})"]`);
+        const dislikeIcon = dislikeBtn.querySelector('i');
+        const dislikesCount = dislikeBtn.querySelector('.dislikes-count');
+        
+        if (data.status === 'added') {
+            dislikeBtn.classList.add('active');
+            dislikeIcon.classList.add('text-white');
+            // Si se dio dislike, quitar el like si existe
+            const likeBtn = document.querySelector(`button[onclick="toggleLike(${publicacionId})"]`);
+            if (likeBtn) {
+                likeBtn.classList.remove('active');
+                likeBtn.querySelector('i').classList.remove('text-white');
+            }
+            if (dislikesCount) {
+                dislikesCount.textContent = parseInt(dislikesCount.textContent || '0') + 1;
+            }
+        } else {
+            dislikeBtn.classList.remove('active');
+            dislikeIcon.classList.remove('text-white');
+            if (dislikesCount) {
+                dislikesCount.textContent = parseInt(dislikesCount.textContent || '0') - 1;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Hubo un error al procesar tu dislike. Por favor, intenta de nuevo.');
+    });
+}
+</script> 

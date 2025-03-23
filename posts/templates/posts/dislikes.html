@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis No Me Gusta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Publicaciones que no te gustaron</h2>
+            
+            {% if dislikes %}
+                <div class="row">
+                    {% for dislike in dislikes %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="{{ dislike.publicacion.imagen_url }}" class="card-img-top" alt="{{ dislike.publicacion.titulo }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ dislike.publicacion.titulo }}</h5>
+                                    <p class="card-text">{{ dislike.publicacion.descripcion|truncatechars:100 }}</p>
+                                    <p class="text-muted">
+                                        <small>No te gustó el {{ dislike.fecha_dislike|date:"d/m/Y" }}</small>
+                                    </p>
+                                    <a href="{% url 'posts:ver_publicacion' dislike.publicacion.id %}" class="btn btn-outline-primary">Ver publicación</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p>Aún no has marcado ninguna publicación como "No me gusta".</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.btn-outline-primary {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-outline-primary:hover {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+</style>
+{% endblock %} 

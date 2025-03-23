@@ -220,7 +220,7 @@
                             <li><a class="dropdown-item" href="/inicio/mis-alquileres"><i class="fas fa-key"></i> Mis Alquileres</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li class="nav-item me-3">
-                                <a href="#" class="btn btn-success ms-1" title="Publicar Prenda" data-bs-toggle="modal" data-bs-target="#publicarModal">
+                                <a href="#" class="btn btn-success ms-1" title="Publicar Prenda" data-bs-toggle="modal" data-bs-target="#modalPublicar">
                                    Publicar prenda
                                 </a>
                             </li>
@@ -304,101 +304,113 @@
     <!-- Contenido principal -->
     {% block content %}{% endblock %}
 
-    <!-- Modal de Publicación -->
-    <div class="modal fade" id="publicarModal" tabindex="-1" aria-labelledby="publicarModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <!-- Modal Publicar -->
+    <div class="modal fade" id="modalPublicar" tabindex="-1" aria-labelledby="modalPublicarLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="publicarModalLabel">Nueva Publicación</h5>
+                    <h5 class="modal-title" id="modalPublicarLabel">Nueva Publicación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="publicarForm" method="POST" enctype="multipart/form-data">
+                    <form id="publicarForm" method="POST">
                         {% csrf_token %}
                         
-                        <!-- Imagen -->
-                        <div class="form-section">
-                            <label class="form-label">Imagen de la Prenda*</label>
-                            <div class="image-preview empty" id="imagePreview">
-                                <div class="upload-placeholder text-center">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <p class="mt-2">Haz clic para subir una imagen</p>
-                                    <small class="text-muted">o arrastra y suelta aquí</small>
-                                </div>
-                                <img src="" alt="" style="display: none;">
-                            </div>
-                            <input type="file" class="form-control" name="imagen" id="imageInput" accept="image/*" required style="display: none;">
-                        </div>
-
                         <!-- Título -->
-                        <div class="form-section">
-                            <label class="form-label" for="titulo">Título*</label>
-                            <input type="text" class="form-control" id="titulo" name="titulo" required 
-                                   placeholder="Ej: Vestido Floral Verano">
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título*</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required maxlength="255">
                         </div>
 
                         <!-- Descripción -->
-                        <div class="form-section">
-                            <label class="form-label" for="descripcion">Descripción*</label>
-                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required
-                                      placeholder="Describe los detalles de tu prenda..."></textarea>
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                        </div>
+
+                        <!-- URL de la imagen -->
+                        <div class="mb-3">
+                            <label for="imagen_url" class="form-label">URL de la imagen*</label>
+                            <input type="url" class="form-control" id="imagen_url" name="imagen_url" required 
+                                   placeholder="https://ejemplo.com/imagen.jpg">
                         </div>
 
                         <!-- Tipo de Publicación -->
-                        <div class="form-section">
+                        <div class="mb-3">
                             <label class="form-label">Tipo de Publicación*</label>
-                            <div class="tipo-toggle">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="tipo" id="tipoVenta" value="venta" required>
-                                    <label class="form-check-label" for="tipoVenta">Venta</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="tipo" id="tipoAlquiler" value="alquiler">
-                                    <label class="form-check-label" for="tipoAlquiler">Alquiler</label>
-                                </div>
-                            </div>
+                            <select class="form-control" name="tipo" id="tipoPublicacion" required>
+                                <option value="">Selecciona un tipo</option>
+                                <option value="venta">Venta</option>
+                                <option value="alquiler">Alquiler</option>
+                            </select>
                         </div>
 
                         <!-- Precio -->
-                        <div class="form-section">
-                            <label class="form-label" for="precio">Precio*</label>
-                            <div class="precio-input">
-                                <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                                       placeholder="0.00">
-                            </div>
+                        <div class="mb-3">
+                            <label for="precio" class="form-label">Precio*</label>
+                            <input type="number" class="form-control" id="precio" name="precio" step="0.01" required>
                         </div>
 
-                        <!-- Depósito (solo visible si es alquiler) -->
-                        <div class="form-section" id="depositoSection" style="display: none;">
-                            <label class="form-label" for="deposito">Depósito de Seguridad</label>
-                            <div class="precio-input">
-                                <input type="number" class="form-control" id="deposito" name="deposito" min="0" step="0.01"
-                                       placeholder="0.00">
-                            </div>
+                        <!-- Depósito (para alquiler) -->
+                        <div class="mb-3" id="depositoSection" style="display: none;">
+                            <label for="deposito" class="form-label">Depósito de Seguridad*</label>
+                            <input type="number" class="form-control" id="deposito" name="deposito" step="0.01">
                             <small class="text-muted">El depósito se devolverá cuando la prenda sea regresada en buen estado</small>
                         </div>
 
+                        <!-- Público -->
+                        <div class="mb-3">
+                            <label class="form-label">Público Objetivo*</label>
+                            <select class="form-control" name="publico" required>
+                                <option value="">Selecciona el público</option>
+                                <option value="mujer">Mujer</option>
+                                <option value="hombre">Hombre</option>
+                                <option value="niño">Niño</option>
+                                <option value="niña">Niña</option>
+                                <option value="mascota">Mascota</option>
+                            </select>
+                        </div>
+
+                        <!-- Talla -->
+                        <div class="mb-3">
+                            <label class="form-label">Talla*</label>
+                            <select class="form-control" name="talla" required>
+                                <option value="">Selecciona la talla</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                        </div>
+
                         <!-- Estilo -->
-                        <div class="form-section">
+                        <div class="mb-3">
                             <label class="form-label">Estilo*</label>
-                            <div class="tag-list">
-                                {% for estilo in publicacion.estilo %}
-                                <span class="tag">{{ estilo }}</span>
-                                {% endfor %}
-                            </div>
+                            <select class="form-control" name="estilo[]" multiple required>
+                                <option value="casual">Casual</option>
+                                <option value="formal">Formal</option>
+                                <option value="deportivo">Deportivo</option>
+                                <option value="elegante">Elegante</option>
+                                <option value="vintage">Vintage</option>
+                            </select>
+                            <small class="text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples opciones</small>
                         </div>
 
                         <!-- Colores -->
-                        <div class="form-section">
+                        <div class="mb-3">
                             <label class="form-label">Colores*</label>
-                            <div class="tag-list">
-                                {% for color in publicacion.colores %}
-                                <span class="tag color-tag">
-                                    <div class="color-preview" style="background-color: {{ color }};"></div>
-                                    {{ color }}
-                                </span>
-                                {% endfor %}
-                            </div>
+                            <select class="form-control" name="colores[]" multiple required>
+                                <option value="negro">Negro</option>
+                                <option value="blanco">Blanco</option>
+                                <option value="rojo">Rojo</option>
+                                <option value="azul">Azul</option>
+                                <option value="verde">Verde</option>
+                                <option value="amarillo">Amarillo</option>
+                                <option value="rosa">Rosa</option>
+                                <option value="morado">Morado</option>
+                            </select>
+                            <small class="text-muted">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples opciones</small>
                         </div>
                     </form>
                 </div>
@@ -434,54 +446,13 @@
             }
         });
 
-        // Manejo de la imagen en el modal
-        const imagePreview = document.getElementById('imagePreview');
-        const imageInput = document.getElementById('imageInput');
-        const previewImage = imagePreview.querySelector('img');
-        const uploadPlaceholder = imagePreview.querySelector('.upload-placeholder');
-
-        imagePreview.addEventListener('click', () => imageInput.click());
-
-        imageInput.addEventListener('change', function(e) {
-            handleImageSelection(e.target.files[0]);
-        });
-
-        // Drag and drop
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            imagePreview.addEventListener(eventName, preventDefaults);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        imagePreview.addEventListener('drop', function(e) {
-            const file = e.dataTransfer.files[0];
-            handleImageSelection(file);
-        });
-
-        function handleImageSelection(file) {
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    uploadPlaceholder.style.display = 'none';
-                    imagePreview.classList.remove('empty');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
         // Manejo del tipo de publicación
-        const tipoVenta = document.getElementById('tipoVenta');
-        const tipoAlquiler = document.getElementById('tipoAlquiler');
+        const tipoPublicacion = document.getElementById('tipoPublicacion');
         const depositoSection = document.getElementById('depositoSection');
         const depositoInput = document.getElementById('deposito');
 
-        function updateTipoUI() {
-            if (tipoAlquiler.checked) {
+        tipoPublicacion.addEventListener('change', function() {
+            if (this.value === 'alquiler') {
                 depositoSection.style.display = 'block';
                 depositoInput.required = true;
             } else {
@@ -489,45 +460,112 @@
                 depositoInput.required = false;
                 depositoInput.value = '';
             }
-        }
-
-        tipoVenta.addEventListener('change', updateTipoUI);
-        tipoAlquiler.addEventListener('change', updateTipoUI);
-
-        // Estilo activo para los radio buttons
-        const tipoChecks = document.querySelectorAll('.tipo-toggle .form-check');
-        tipoChecks.forEach(check => {
-            const radio = check.querySelector('input[type="radio"]');
-            radio.addEventListener('change', function() {
-                tipoChecks.forEach(c => c.classList.remove('active'));
-                if (this.checked) {
-                    check.classList.add('active');
-                }
-            });
         });
 
-        // Manejar el envío del formulario
+        // Manejo del formulario
         const publicarForm = document.getElementById('publicarForm');
-        publicarForm.addEventListener('submit', function(e) {
+        publicarForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
             
-            fetch('/inicio/publicar/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            try {
+                // Obtener todos los campos del formulario
+                const formData = new FormData(this);
+                
+                // Crear el objeto de datos
+                const data = {
+                    titulo: formData.get('titulo'),
+                    descripcion: formData.get('descripcion'),
+                    imagen_url: formData.get('imagen_url'),
+                    tipo: formData.get('tipo'),
+                    precio: parseFloat(formData.get('precio')),
+                    publico: formData.get('publico'),
+                    talla: formData.get('talla'),
+                    estilo: Array.from(document.querySelectorAll('select[name="estilo[]"] option:checked')).map(opt => opt.value),
+                    colores: Array.from(document.querySelectorAll('select[name="colores[]"] option:checked')).map(opt => opt.value)
+                };
+
+                // Agregar depósito solo si es alquiler
+                if (data.tipo === 'alquiler' && formData.get('deposito')) {
+                    data.deposito = parseFloat(formData.get('deposito'));
+                }
+
+                // Validar campos requeridos
+                const camposRequeridos = {
+                    titulo: 'Título',
+                    imagen_url: 'URL de la imagen',
+                    tipo: 'Tipo de publicación',
+                    precio: 'Precio',
+                    publico: 'Público objetivo',
+                    talla: 'Talla'
+                };
+
+                for (const [campo, nombre] of Object.entries(camposRequeridos)) {
+                    if (!data[campo]) {
+                        throw new Error(`El campo ${nombre} es requerido`);
+                    }
+                }
+
+                if (!data.estilo.length) {
+                    throw new Error('Debes seleccionar al menos un estilo');
+                }
+
+                if (!data.colores.length) {
+                    throw new Error('Debes seleccionar al menos un color');
+                }
+
+                // Validar que la URL de la imagen sea válida
+                try {
+                    new URL(data.imagen_url);
+                } catch {
+                    throw new Error('La URL de la imagen no es válida');
+                }
+
+                // Validar que el precio sea positivo
+                if (data.precio <= 0) {
+                    throw new Error('El precio debe ser mayor que 0');
+                }
+
+                // Obtener el token CSRF
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                console.log('Datos a enviar:', data);
+
+                // Enviar la solicitud
+                const response = await fetch('/inicio/publicar/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Manejar la respuesta
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error('Respuesta del servidor:', text);
+                    throw new Error(`Error del servidor (${response.status}): ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalPublicar'));
+                    modal.hide();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Publicación creada exitosamente');
+                    
+                    // Recargar la página
                     window.location.reload();
                 } else {
-                    alert(data.error || 'Error al publicar la prenda');
+                    throw new Error(result.error || 'Error desconocido al crear la publicación');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
-                alert('Error al publicar la prenda');
-            });
+                alert(error.message);
+            }
         });
     });
 

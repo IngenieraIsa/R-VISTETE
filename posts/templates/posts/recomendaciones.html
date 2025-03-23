@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}R-Vístete - Recomendaciones{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recomendaciones-container {
+        padding: 2rem 0;
+    }
+
+    .recomendacion-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s;
+    }
+
+    .recomendacion-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .recomendacion-imagen {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .recomendacion-contenido {
+        padding: 1rem;
+    }
+
+    .recomendacion-titulo {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .recomendacion-precio {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .recomendacion-razones {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .recomendacion-razon {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .score-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(40, 167, 69, 0.9);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container recomendaciones-container">
+    <h2 class="mb-4">Recomendaciones para ti</h2>
+    <div class="row" id="recomendaciones-grid">
+        <!-- Las recomendaciones se cargarán aquí dinámicamente -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    cargarRecomendaciones();
+});
+
+function cargarRecomendaciones() {
+    fetch('/posts/recomendaciones/')
+        .then(response => response.json())
+        .then(data => {
+            const grid = document.getElementById('recomendaciones-grid');
+            grid.innerHTML = data.recomendaciones.map(rec => `
+                <div class="col-md-4 mb-4">
+                    <div class="recomendacion-card position-relative">
+                        <img src="${rec.imagen_url}" alt="${rec.titulo}" class="recomendacion-imagen">
+                        <div class="score-badge">
+                            Score: ${rec.score.toFixed(2)}
+                        </div>
+                        <div class="recomendacion-contenido">
+                            <h3 class="recomendacion-titulo">${rec.titulo}</h3>
+                            <p class="recomendacion-precio">$${rec.precio}</p>
+                            <div class="recomendacion-razones">
+                                ${rec.razones.map(razon => `
+                                    <p class="recomendacion-razon">
+                                        <i class="fas fa-check-circle text-success me-1"></i>
+                                        ${razon}
+                                    </p>
+                                `).join('')}
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" onclick="mostrarModalCompra(${rec.id}, 'compra')">
+                                    <i class="fas fa-shopping-cart"></i> Comprar
+                                </button>
+                                <button class="btn btn-success" onclick="mostrarModalCompra(${rec.id}, 'alquiler')">
+                                    <i class="fas fa-key"></i> Alquilar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('recomendaciones-grid').innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger">
+                        Error al cargar las recomendaciones. Por favor, intenta de nuevo más tarde.
+                    </div>
+                </div>
+            `;
+        });
+}
+</script>
+{% endblock %} 
