@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Likes - R-Vístete{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Mis Likes</h2>
+    <div class="row">
+        {% for publicacion in publicaciones %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100" data-publicacion-id="{{ publicacion.id }}">
+                <img src="{{ publicacion.imagen_url }}" class="card-img-top" alt="{{ publicacion.titulo }}" style="height: 300px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ publicacion.titulo }}</h5>
+                    <p class="card-text">{{ publicacion.descripcion|truncatechars:100 }}</p>
+                    <p class="text-muted">Like dado el {{ publicacion.fecha_like|date:"d/m/Y H:i" }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-primary" onclick="mostrarDetallePublicacion({{ publicacion.id }})">
+                            <i class="fas fa-eye"></i> Ver Publicación
+                        </button>
+                        <span class="text-success h5 mb-0">${{ publicacion.precio }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No has dado like a ninguna publicación aún.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal de Detalle de Publicación -->
+<div class="modal fade" id="modalDetallePublicacion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de la Publicación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modalImagen" src="" alt="Imagen de la prenda" class="img-fluid rounded">
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="modalTitulo" class="mb-3"></h4>
+                        <p id="modalDescripcion" class="mb-3"></p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Precio:</span>
+                            <span id="modalPrecio" class="h4 text-success mb-0"></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Tipo:</span>
+                            <span id="modalTipo" class="badge bg-primary"></span>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <button class="btn btn-primary flex-grow-1" onclick="mostrarModalCompra(currentPublicacionId, 'compra')">
+                                <i class="fas fa-shopping-cart"></i> Comprar
+                            </button>
+                            <button class="btn btn-success flex-grow-1" onclick="mostrarModalCompra(currentPublicacionId, 'alquiler')">
+                                <i class="fas fa-key"></i> Alquilar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluir el modal de compra/alquiler -->
+{% include 'posts/modals/compra_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPublicacionId = null;
+
+function mostrarDetallePublicacion(publicacionId) {
+    currentPublicacionId = publicacionId;
+    const publicacionCard = document.querySelector(`[data-publicacion-id="${publicacionId}"]`);
+    
+    // Obtener los datos de la publicación
+    const imagen = publicacionCard.querySelector('.card-img-top').src;
+    const titulo = publicacionCard.querySelector('.card-title').textContent;
+    const descripcion = publicacionCard.querySelector('.card-text').textContent;
+    const precio = publicacionCard.querySelector('.text-success').textContent;
+    
+    // Actualizar el modal con los datos
+    document.getElementById('modalImagen').src = imagen;
+    document.getElementById('modalTitulo').textContent = titulo;
+    document.getElementById('modalDescripcion').textContent = descripcion;
+    document.getElementById('modalPrecio').textContent = precio;
+    
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalDetallePublicacion'));
+    modal.show();
+}
+
+// Función para mostrar el modal de compra/alquiler (reutilizada del inicio.html)
+function mostrarModalCompra(publicacionId, tipo) {
+    const publicacionCard = document.querySelector(`[data-publicacion-id="${publicacionId}"]`);
+    const imagen = publicacionCard.querySelector('.card-img-top').src;
+    const titulo = publicacionCard.querySelector('.card-title').textContent;
+    const precioTexto = publicacionCard.querySelector('.text-success').textContent;
+    const precio = parseFloat(precioTexto.replace('$', ''));
+
+    document.getElementById('modalImagenPrenda').src = imagen;
+    document.getElementById('modalTituloPrenda').textContent = titulo;
+    document.getElementById('modalPrecioPrenda').textContent = precioTexto;
+    document.getElementById('modalPublicacionId').value = publicacionId;
+    document.getElementById('modalTipoOperacion').value = tipo;
+
+    const camposAlquiler = document.getElementById('camposAlquiler');
+    const depositoRow = document.getElementById('depositoRow');
+    if (tipo === 'alquiler') {
+        camposAlquiler.style.display = 'block';
+        depositoRow.style.display = 'flex';
+        document.getElementById('deposito').textContent = `$${(precio * 0.5).toFixed(2)}`;
+    } else {
+        camposAlquiler.style.display = 'none';
+        depositoRow.style.display = 'none';
+    }
+
+    document.getElementById('subtotal').textContent = precioTexto;
+    actualizarTotal();
+
+    document.getElementById('btnAccionTexto').textContent = tipo === 'compra' ? 'Pagar ahora' : 'Reservar y pagar';
+
+    const modalTitle = document.querySelector('#modalCompra .modal-title');
+    modalTitle.textContent = tipo === 'compra' ? 'Comprar Prenda' : 'Alquilar Prenda';
+
+    // Cerrar el modal de detalle y mostrar el modal de compra
+    const modalDetalle = bootstrap.Modal.getInstance(document.getElementById('modalDetallePublicacion'));
+    modalDetalle.hide();
+    
+    const modalCompra = new bootstrap.Modal(document.getElementById('modalCompra'));
+    modalCompra.show();
+}
+
+// Función para actualizar el total (reutilizada del inicio.html)
+function actualizarTotal() {
+    const subtotalTexto = document.getElementById('subtotal').textContent;
+    const subtotal = parseFloat(subtotalTexto.replace('$', ''));
+    const envio = 5.00;
+    let total = subtotal + envio;
+
+    if (document.getElementById('modalTipoOperacion').value === 'alquiler') {
+        const depositoTexto = document.getElementById('deposito').textContent;
+        const deposito = parseFloat(depositoTexto.replace('$', ''));
+        total += deposito;
+    }
+
+    document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+}
+</script>
+{% endblock %} 

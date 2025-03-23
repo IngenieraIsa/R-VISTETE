@@ -1,0 +1,106 @@
+/* Estilos para la barra de navegación */
+.navbar {
+    background: rgba(255, 255, 255, 0.6); /* Transparente con un poco de opacidad */
+    backdrop-filter: blur(10px); /* Efecto difuminado */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Logo y marca */
+.navbar-brand {
+    font-weight: 600;
+    color: #2c3e50 !important;
+    font-size: 1.5rem;
+}
+
+/* Estilos para los enlaces */
+.nav-link {
+    color: #2c3e50 !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+}
+
+.nav-link:hover {
+    color: #fff !important;
+    background-color: #A4C3A2; /* Verde del logo */
+}
+
+/* Estado activo */
+.nav-link.active {
+    color: #fff !important;
+    background-color: #A4C3A2;
+}
+
+/* Menú desplegable */
+.dropdown-menu {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #34495e;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #A4C3A2;
+    color: white;
+}
+
+/* Navbar responsive */
+@media (max-width: 991px) {
+    .navbar {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .navbar-toggler {
+        border: none;
+        outline: none;
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1);
+    }
+}
+
+/* 📌 Estilos para los Cards de Publicaciones */
+.publicacion-card {
+    max-width: 140px; /* Más pequeño */
+    height: auto; /* Se ajusta automáticamente */
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    overflow: hidden; /* Evita que el contenido sobresalga */
+}
+
+/* 📌 Ajuste de imágenes dentro del Card */
+.publicacion-card img {
+    max-height: 140px; /* Reduce más la altura */
+    width: 50%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* 📌 Ajuste del contenido dentro del Card */
+.publicacion-card .contenido {
+    font-size: 13px; /* Reduce un poco más el tamaño del texto */
+    padding: 4px;
+    text-align: center;
+}
+
+/* 📌 Responsive: Reduce aún más en móviles */
+@media (max-width: 768px) {
+    .publicacion-card {
+        max-width: 200px; /* Cards más pequeños en móviles */
+    }
+
+    .publicacion-card img {
+        max-height: 120px; /* Reduce más la imagen en móviles */
+    }
+}

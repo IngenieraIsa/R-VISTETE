@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Publicar Prenda - R-Vístete{% endblock %}
+
+{% block extra_css %}
+<style>
+    .publish-container {
+        margin-top: 2rem;
+        padding-bottom: 3rem;
+    }
+    
+    .publish-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .publish-card .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #eee;
+        padding: 1.5rem;
+    }
+    
+    .publish-card .card-body {
+        padding: 2rem;
+    }
+    
+    .image-preview {
+        width: 100%;
+        height: 250px;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .image-preview.empty {
+        background-color: #f8f9fa;
+    }
+    
+    .image-preview.empty:hover {
+        border-color: #ff4081;
+        background-color: #fff5f8;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: #ddd;
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .tipo-toggle {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .tipo-toggle .form-check {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .tipo-toggle .form-check.active {
+        background-color: #ff4081;
+        color: white;
+        border-color: #ff4081;
+    }
+
+    .precio-input {
+        position: relative;
+    }
+
+    .precio-input::before {
+        content: "$";
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #495057;
+    }
+
+    .precio-input input {
+        padding-left: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container publish-container">
+    <div class="card publish-card">
+        <div class="card-header">
+            <h4 class="mb-0">Nueva Publicación</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Imagen -->
+                <div class="form-section">
+                    <label class="form-label">Imagen de la Prenda*</label>
+                    <div class="image-preview empty" id="imagePreview">
+                        <div class="upload-placeholder text-center">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <p class="mt-2">Haz clic para subir una imagen</p>
+                            <small class="text-muted">o arrastra y suelta aquí</small>
+                        </div>
+                        <img src="" alt="" style="display: none;">
+                    </div>
+                    <input type="file" class="form-control" name="imagen" id="imageInput" accept="image/*" required style="display: none;">
+                </div>
+
+                <!-- Título -->
+                <div class="form-section">
+                    <label class="form-label" for="titulo">Título*</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo" required 
+                           placeholder="Ej: Vestido Floral Verano">
+                </div>
+
+                <!-- Descripción -->
+                <div class="form-section">
+                    <label class="form-label" for="descripcion">Descripción*</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required
+                              placeholder="Describe los detalles de tu prenda..."></textarea>
+                </div>
+
+                <!-- Tipo de Publicación -->
+                <div class="form-section">
+                    <label class="form-label">Tipo de Publicación*</label>
+                    <div class="tipo-toggle">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipo" id="tipoVenta" value="venta" required>
+                            <label class="form-check-label" for="tipoVenta">Venta</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipo" id="tipoAlquiler" value="alquiler">
+                            <label class="form-check-label" for="tipoAlquiler">Alquiler</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Precio -->
+                <div class="form-section">
+                    <label class="form-label" for="precio">Precio*</label>
+                    <div class="precio-input">
+                        <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
+                               placeholder="0.00">
+                    </div>
+                </div>
+
+                <!-- Depósito (solo visible si es alquiler) -->
+                <div class="form-section" id="depositoSection" style="display: none;">
+                    <label class="form-label" for="deposito">Depósito de Seguridad</label>
+                    <div class="precio-input">
+                        <input type="number" class="form-control" id="deposito" name="deposito" min="0" step="0.01"
+                               placeholder="0.00">
+                    </div>
+                    <small class="text-muted">El depósito se devolverá cuando la prenda sea regresada en buen estado</small>
+                </div>
+
+                <!-- Botones -->
+                <div class="text-end mt-4">
+                    <a href="/inicio/" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Publicar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejo de la imagen
+    const imagePreview = document.getElementById('imagePreview');
+    const imageInput = document.getElementById('imageInput');
+    const previewImage = imagePreview.querySelector('img');
+    const uploadPlaceholder = imagePreview.querySelector('.upload-placeholder');
+
+    imagePreview.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', function(e) {
+        handleImageSelection(e.target.files[0]);
+    });
+
+    // Drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        imagePreview.addEventListener(eventName, preventDefaults);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    imagePreview.addEventListener('drop', function(e) {
+        const file = e.dataTransfer.files[0];
+        handleImageSelection(file);
+    });
+
+    function handleImageSelection(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                uploadPlaceholder.style.display = 'none';
+                imagePreview.classList.remove('empty');
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Manejo del tipo de publicación
+    const tipoVenta = document.getElementById('tipoVenta');
+    const tipoAlquiler = document.getElementById('tipoAlquiler');
+    const depositoSection = document.getElementById('depositoSection');
+    const depositoInput = document.getElementById('deposito');
+
+    function updateTipoUI() {
+        if (tipoAlquiler.checked) {
+            depositoSection.style.display = 'block';
+            depositoInput.required = true;
+        } else {
+            depositoSection.style.display = 'none';
+            depositoInput.required = false;
+            depositoInput.value = '';
+        }
+    }
+
+    tipoVenta.addEventListener('change', updateTipoUI);
+    tipoAlquiler.addEventListener('change', updateTipoUI);
+
+    // Estilo activo para los radio buttons
+    const tipoChecks = document.querySelectorAll('.tipo-toggle .form-check');
+    tipoChecks.forEach(check => {
+        const radio = check.querySelector('input[type="radio"]');
+        radio.addEventListener('change', function() {
+            tipoChecks.forEach(c => c.classList.remove('active'));
+            if (this.checked) {
+                check.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 
