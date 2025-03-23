@@ -13,6 +13,7 @@ from django.core.files.base import ContentFile
 from recommendations.recommendation_engine import RecommendationEngine
 from .recommender import RecomendadorPrendas
 from django.contrib import messages
+from recommendations.sentiment_analyzer import SentimentAnalyzer
 
 #inicio - publicaciones
 
@@ -668,35 +669,35 @@ def ver_dislikes(request):
 
 @login_required
 def obtener_recomendaciones(request):
-    """Vista para obtener recomendaciones personalizadas"""
-    recomendador = RecomendadorPrendas(request.user.id)
-    recomendaciones = recomendador.generar_recomendaciones()
+    # Obtener las interacciones del usuario
+    likes = Like.objects.filter(usuario_id=request.user.id)
+    favoritos = Favorito.objects.filter(usuario_id=request.user.id)
+    comentarios = Comentario.objects.filter(usuario_id=request.user.id)
     
-    # Si las recomendaciones son un queryset (caso sin perfil)
-    if hasattr(recomendaciones, 'model'):
-        return JsonResponse({
-            'recomendaciones': [
-                {
-                    'id': pub.id,
-                    'titulo': pub.titulo,
-                    'imagen_url': pub.imagen_url,
-                    'precio': pub.precio,
-                    'score': 0,
-                    'razones': ['Publicación reciente que podría interesarte']
-                } for pub in recomendaciones
-            ]
+    # Crear el analizador de sentimientos
+    analyzer = SentimentAnalyzer(request.user.id)
+    
+    # Analizar las interacciones del usuario
+    analyzer.analizar_likes(likes)
+    analyzer.analizar_favoritos(favoritos)
+    analyzer.analizar_comentarios(comentarios)
+    
+    # Obtener todas las publicaciones excepto las del usuario
+    publicaciones = Publicacion.objects.exclude(usuario_id=request.user.id)
+    
+    # Generar recomendaciones
+    recomendaciones_con_score = analyzer.generar_recomendaciones(publicaciones, limit=10)
+    
+    # Preparar los datos para la plantilla
+    recomendaciones_data = []
+    for pub, score in recomendaciones_con_score:
+        recomendaciones_data.append({
+            'publicacion': pub,
+            'score': round(score, 2),
+            'razones': analyzer.obtener_razones_recomendacion(pub)
         })
     
-    # Si son recomendaciones con score
-    return JsonResponse({
-        'recomendaciones': [
-            {
-                'id': rec['publicacion'].id,
-                'titulo': rec['publicacion'].titulo,
-                'imagen_url': rec['publicacion'].imagen_url,
-                'precio': rec['publicacion'].precio,
-                'score': rec['score'],
-                'razones': rec['razones']
-            } for rec in recomendaciones[:10]  # Limitamos a 10 recomendaciones
-        ]
+    return render(request, 'posts/recomendaciones.html', {
+        'recomendaciones': recomendaciones_data,
+        'preferencias': analyzer.preferencias
     })
