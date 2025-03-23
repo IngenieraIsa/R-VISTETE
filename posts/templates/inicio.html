@@ -181,12 +181,27 @@
     {% csrf_token %}
     <div class="row justify-content-center">
         <div class="col-md-8">
+            
     {% for publicacion in publicaciones %}
+    
             <div class="card mb-4" data-publicacion-id="{{ publicacion.id }}">
+                <div class="card-header d-flex align-items-center">
+                    <img src="{{ publicacion.usuario.foto_perfil }}" 
+                         alt="Foto de {{ publicacion.usuario.nombre }}" 
+                         class="rounded-circle me-2" 
+                         style="width: 40px; height: 40px; object-fit: cover;">
+                    <strong>{{ publicacion.usuario.nombre }} {{ publicacion.usuario.apellido }}</strong>
+                </div>
                 <img src="{{ publicacion.imagen_url }}" class="card-img-top" alt="{{ publicacion.titulo }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ publicacion.titulo }}</h5>
                     <p class="card-text">{{ publicacion.descripcion }}</p>
+                    <p class="card-text">
+                        <strong>Público:</strong> {{ publicacion.publico }} <br>
+                        <strong>Estilo:</strong> {{ publicacion.estilo|join:", " }} <br>
+                        <strong>Colores:</strong> {{ publicacion.colores|join:", " }} <br>
+                        <strong>Talla:</strong> {{ publicacion.talla }}
+                    </p>
                     <p class="card-text">
                         <small class="text-muted">Publicado el {{ publicacion.fecha_publicacion|date:"d/m/Y H:i" }}</small>
                     </p>

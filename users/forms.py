@@ -1,6 +1,8 @@
 from django import forms
 from .models import PerfilUsuario
 import json
+from django.contrib.postgres.fields import RangeField
+from psycopg2.extras import NumericRange
 
 class PerfilUsuarioForm(forms.ModelForm):
     TALLAS = [
@@ -37,11 +39,17 @@ class PerfilUsuarioForm(forms.ModelForm):
     ]
 
     RANGOS_PRECIO = [
-        ('0-50', '$0 - $50'),
-        ('51-100', '$51 - $100'),
-        ('101-200', '$101 - $200'),
-        ('201-500', '$201 - $500'),
-        ('501+', 'Más de $500')
+        ('[0,50]', 'Económico (0-50)'),
+        ('[51,150]', 'Medio (51-150)'),
+        ('[151,500]', 'Premium (151-500)'),
+        ('[501,999999]', 'Lujo (500+)'),
+    ]
+
+    ESTADOS = [
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+        ('vacaciones', 'De Vacaciones'),
+        ('ocupado', 'Ocupado')
     ]
 
     talla = forms.ChoiceField(choices=TALLAS, required=False)
@@ -76,13 +84,26 @@ class PerfilUsuarioForm(forms.ModelForm):
     telefono = forms.CharField(max_length=20, required=False)
     ubicacion = forms.CharField(max_length=100, required=False)
     redes_sociales = forms.JSONField(required=False)
+    estado = forms.ChoiceField(
+        choices=ESTADOS,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False
+    )
+    intereses = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ingresa tus intereses separados por comas (ej: moda, tendencias, vintage)'
+        }),
+        required=False
+    )
 
     class Meta:
         model = PerfilUsuario
         fields = [
-            'descripcion', 'telefono', 'ubicacion', 'talla',
-            'estilos_preferidos', 'colores_preferidos', 'rango_precio_preferido',
-            'marcas_favoritas', 'ocasiones_uso', 'redes_sociales'
+            'descripcion', 'estado', 'telefono', 'ubicacion', 
+            'talla', 'estilos_preferidos', 'colores_preferidos',
+            'rango_precio_preferido', 'marcas_favoritas', 'ocasiones_uso',
+            'intereses', 'redes_sociales'
         ]
         widgets = {
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
@@ -123,6 +144,13 @@ class PerfilUsuarioForm(forms.ModelForm):
         if not isinstance(redes, dict):
             redes = {}
         return redes
+
+    def clean_intereses(self):
+        intereses = self.cleaned_data.get('intereses', '')
+        if intereses:
+            # Convertir el string de intereses separados por comas a una lista
+            return [interes.strip() for interes in intereses.split(',')]
+        return []
 
     def save(self, commit=True):
         instance = super().save(commit=False)

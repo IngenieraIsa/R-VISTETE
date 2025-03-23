@@ -1,5 +1,6 @@
+from django.contrib.postgres.fields import ArrayField  # Importar ArrayField
 from django.db import models
-from users.models import Usuario  # ✅ Ahora sí podemos importar
+from users.models import Usuario
 
 class Publicacion(models.Model):
     id = models.AutoField(primary_key=True)
@@ -12,12 +13,24 @@ class Publicacion(models.Model):
     tipo = models.CharField(max_length=10, default='venta', choices=[('venta', 'Venta'), ('alquiler', 'Alquiler')])
     deposito = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
+    # 🔹 Campos faltantes
+    publico = models.CharField(max_length=10, choices=[
+        ('mujer', 'Mujer'), ('hombre', 'Hombre'), ('niño', 'Niño'),
+        ('niña', 'Niña'), ('mascota', 'Mascota')
+    ], default='mujer')
+
+    talla = models.CharField(max_length=10, default='M')
+
+    estilo = ArrayField(models.CharField(max_length=50), default=list)
+    colores = ArrayField(models.CharField(max_length=50), default=list)
+
     class Meta:
         db_table = 'publicaciones'  # 🔗 Conectar con la tabla en PostgreSQL
         ordering = ['-fecha_publicacion']  # Ordenar por fecha más reciente
 
     def __str__(self):
         return f"{self.titulo} - {self.usuario.nombre}"
+
 
 class Compra(models.Model):
     id = models.AutoField(primary_key=True)

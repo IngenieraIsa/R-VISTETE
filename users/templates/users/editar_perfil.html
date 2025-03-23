@@ -37,7 +37,7 @@
     
     .form-section h4 i {
         margin-right: 0.8rem;
-        color: #ff4081;
+        color: green;
         font-size: 1.2em;
     }
 
@@ -52,7 +52,7 @@
 
     .form-label i {
         margin-right: 0.5rem;
-        color: #ff4081;
+        color: green;
         font-size: 0.9em;
     }
     
@@ -67,7 +67,7 @@
     }
     
     .form-control:focus, .form-select:focus {
-        border-color: #ff4081;
+        border-color: green;
         box-shadow: 0 0 0 0.2rem rgba(255, 64, 129, 0.1);
         background-color: #fff;
     }
@@ -102,7 +102,7 @@
     
     .checkbox-item:hover {
         background-color: #fff;
-        border-color: #ff4081;
+        border-color: green;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
@@ -112,7 +112,7 @@
         width: 1.2rem;
         height: 1.2rem;
         border-radius: 4px;
-        border: 2px solid #ff4081;
+        border: 2px solid green;
         cursor: pointer;
     }
 
@@ -144,22 +144,22 @@
         margin-top: 0.5rem;
         font-style: italic;
         padding-left: 0.5rem;
-        border-left: 3px solid #ff4081;
+        border-left: 3px solid green;
     }
     
     .error-feedback {
-        color: #dc3545;
+        color: green;
         font-size: 0.85rem;
         margin-top: 0.5rem;
         padding: 0.5rem;
         background-color: #fff;
         border-radius: 8px;
-        border-left: 3px solid #dc3545;
+        border-left: 3px solid green;
     }
     
     .btn-primary {
-        background-color: #ff4081;
-        border-color: #ff4081;
+        background-color: green;
+        border-color: green;
         padding: 0.8rem 2rem;
         font-weight: 600;
         border-radius: 12px;
@@ -169,8 +169,8 @@
     }
     
     .btn-primary:hover {
-        background-color: #f50057;
-        border-color: #f50057;
+        background-color: green;
+        border-color: green;
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3);
     }
@@ -204,13 +204,13 @@
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #ff4081;
+        color: green;
         font-size: 1.2rem;
         transition: all 0.3s ease;
     }
 
     .social-input input:focus + i {
-        color: #f50057;
+        color: green;
         transform: translateY(-50%) scale(1.1);
     }
     
@@ -233,7 +233,7 @@
     }
 
     .alert-danger {
-        border-left: 4px solid #dc3545;
+        border-left: 4px solid green;
         color: #721c24;
     }
 
@@ -268,6 +268,39 @@
     @keyframes spin {
         to { transform: translateY(-50%) rotate(360deg); }
     }
+
+    .btn-edit {
+        background-color: green;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn-edit:hover {
+        background-color: #f50057;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3);
+    }
+
+    .profile-header {
+        position: relative;
+        text-align: center;
+        padding: 2rem;
+        background-color: white;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    }
 </style>
 {% endblock %}
 
@@ -275,10 +308,7 @@
 <div class="container edit-profile-container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h2 class="mb-4 text-center" style="color: #2c3e50; font-weight: 600;">
-                <i class="fas fa-user-edit me-2" style="color: #ff4081;"></i>
-                Editar Perfil
-            </h2>
+            
             
             {% if messages %}
             <div class="messages mb-4">
@@ -296,11 +326,11 @@
                 
                 <!-- Información Personal -->
                 <div class="form-section">
-                    <h4><i class="fas fa-user"></i>Información Personal</h4>
+                    <h4><i class="fas fa-user text-success"></i>Información Personal</h4>
                     
                     <div class="mb-4">
                         <label for="{{ form.descripcion.id_for_label }}" class="form-label">
-                            <i class="fas fa-comment-alt"></i>Descripción
+                            <i class="fas fa-comment-alt text-success"></i>Descripción
                         </label>
                         {{ form.descripcion }}
                         {% if form.descripcion.help_text %}
@@ -310,11 +340,36 @@
                         <div class="error-feedback">{{ form.descripcion.errors }}</div>
                         {% endif %}
                     </div>
+
+                    <!-- Agregar el campo de estado aquí -->
+                    <div class="mb-4">
+                        <label for="{{ form.estado.id_for_label }}" class="form-label">
+                            <i class="fas fa-circle text-success "></i>Estado
+                        </label>
+                        {{ form.estado }}
+                        {% if form.estado.errors %}
+                        <div class="error-feedback">{{ form.estado.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Agregar el campo de intereses aquí -->
+                    <div class="mb-4">
+                        <label for="{{ form.intereses.id_for_label }}" class="form-label">
+                            <i class="fas fa-heart text-success"></i>Intereses
+                        </label>
+                        {{ form.intereses }}
+                        {% if form.intereses.help_text %}
+                        <div class="help-text">Ingresa tus intereses separados por comas (ej: moda, tendencias, vintage)</div>
+                        {% endif %}
+                        {% if form.intereses.errors %}
+                        <div class="error-feedback">{{ form.intereses.errors }}</div>
+                        {% endif %}
+                    </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label for="{{ form.telefono.id_for_label }}" class="form-label">
-                                <i class="fas fa-phone"></i>Teléfono
+                                <i class="fas fa-phone text-success"></i>Teléfono
                             </label>
                             {{ form.telefono }}
                             {% if form.telefono.errors %}
@@ -324,7 +379,7 @@
                         
                         <div class="col-md-6 mb-4">
                             <label for="{{ form.ubicacion.id_for_label }}" class="form-label">
-                                <i class="fas fa-map-marker-alt"></i>Ubicación
+                                <i class="fas fa-map-marker-alt text-success"></i>Ubicación
                             </label>
                             {{ form.ubicacion }}
                             {% if form.ubicacion.errors %}
@@ -336,11 +391,11 @@
                 
                 <!-- Preferencias de Moda -->
                 <div class="form-section">
-                    <h4><i class="fas fa-tshirt"></i>Preferencias de Moda</h4>
+                    <h4><i class="fas fa-tshirt text-success"></i>Preferencias de Moda</h4>
                     
                     <div class="mb-4">
                         <label for="{{ form.talla.id_for_label }}" class="form-label">
-                            <i class="fas fa-ruler"></i>Talla
+                            <i class="fas fa-ruler text-success"></i>Talla
                         </label>
                         {{ form.talla }}
                         {% if form.talla.errors %}
@@ -350,7 +405,7 @@
                     
                     <div class="mb-4">
                         <label class="form-label">
-                            <i class="fas fa-palette"></i>Estilos Preferidos
+                            <i class="fas fa-palette text-success"></i>Estilos Preferidos
                         </label>
                         <div class="checkbox-group">
                             {% for checkbox in form.estilos_preferidos %}
@@ -366,7 +421,7 @@
                     
                     <div class="mb-4">
                         <label class="form-label">
-                            <i class="fas fa-fill-drip"></i>Colores Preferidos
+                            <i class="fas fa-fill-drip text-success"></i>Colores Preferidos
                         </label>
                         <div class="checkbox-group">
                             {% for checkbox in form.colores_preferidos %}
@@ -384,7 +439,7 @@
 
                     <div class="mb-4">
                         <label for="{{ form.rango_precio_preferido.id_for_label }}" class="form-label">
-                            <i class="fas fa-tag"></i>Rango de Precio Preferido
+                            <i class="fas fa-tag text-success"></i>Rango de Precio Preferido
                         </label>
                         {{ form.rango_precio_preferido }}
                         {% if form.rango_precio_preferido.errors %}
@@ -394,7 +449,7 @@
 
                     <div class="mb-4">
                         <label for="{{ form.marcas_favoritas.id_for_label }}" class="form-label">
-                            <i class="fas fa-star"></i>Marcas Favoritas
+                            <i class="fas fa-star text-success"></i>Marcas Favoritas
                         </label>
                         {{ form.marcas_favoritas }}
                         {% if form.marcas_favoritas.help_text %}
@@ -407,7 +462,7 @@
 
                     <div class="mb-4">
                         <label for="{{ form.ocasiones_uso.id_for_label }}" class="form-label">
-                            <i class="fas fa-calendar-alt"></i>Ocasiones de Uso
+                            <i class="fas fa-calendar-alt text-success"></i>Ocasiones de Uso
                         </label>
                         {{ form.ocasiones_uso }}
                         {% if form.ocasiones_uso.help_text %}
@@ -421,33 +476,33 @@
 
                 <!-- Redes Sociales -->
                 <div class="form-section">
-                    <h4><i class="fas fa-share-alt"></i>Redes Sociales</h4>
+                    <h4><i class="fas fa-share-alt text-success"></i>Redes Sociales</h4>
                     <div id="redes-sociales">
                         <div class="mb-4">
                             <label class="form-label">
-                                <i class="fab fa-instagram"></i>Instagram
+                                <i class="fab fa-instagram text-success"></i>Instagram
                             </label>
                             <div class="social-input">
                                 <input type="url" class="form-control" name="instagram" value="{{ perfil.redes_sociales.instagram|default:'' }}" placeholder="URL de Instagram">
-                                <i class="fab fa-instagram"></i>
+                                <i class="fab fa-instagram text-success"></i>
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label">
-                                <i class="fab fa-twitter"></i>Twitter
+                                <i class="fab fa-twitter text-success"></i>Twitter
                             </label>
                             <div class="social-input">
                                 <input type="url" class="form-control" name="twitter" value="{{ perfil.redes_sociales.twitter|default:'' }}" placeholder="URL de Twitter">
-                                <i class="fab fa-twitter"></i>
+                                <i class="fab fa-twitter text-success"></i>
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label">
-                                <i class="fab fa-facebook"></i>Facebook
+                                <i class="fab fa-facebook text-success"></i>Facebook
                             </label>
                             <div class="social-input">
                                 <input type="url" class="form-control" name="facebook" value="{{ perfil.redes_sociales.facebook|default:'' }}" placeholder="URL de Facebook">
-                                <i class="fab fa-facebook"></i>
+                                <i class="fab fa-facebook text-success"></i>
                             </div>
                         </div>
                         </div>
@@ -457,7 +512,7 @@
                     <a href="{% url 'users:ver_perfil' %}" class="btn btn-secondary me-md-2">
                         <i class="fas fa-times me-2"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-success">
                         <i class="fas fa-save me-2"></i>Guardar Cambios
                     </button>
                 </div>
