@@ -60,141 +60,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="container recommendations-container">
-    <h2 class="mb-4">Recomendaciones Personalizadas</h2>
+<h1>Recomendaciones para ti</h1>
+<ul>
+    {% for publicacion in recomendaciones %}
+        <li>{{ publicacion.titulo }} - {{ publicacion.descripcion }}</li>
+    {% endfor %}
+</ul>
 
-    <!-- Análisis de Preferencias -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="analysis-card">
-                <h4>Tus Preferencias</h4>
-                
-                <!-- Estilos Preferidos -->
-                <div class="mb-3">
-                    <h6>Estilos Favoritos:</h6>
-                    {% for estilo in preferencias.estilos %}
-                        <span class="preference-tag">{{ estilo }}</span>
-                    {% empty %}
-                        <p class="text-muted">No has seleccionado estilos preferidos</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Colores Preferidos -->
-                <div class="mb-3">
-                    <h6>Colores Favoritos:</h6>
-                    {% for color in preferencias.colores %}
-                        <span class="preference-tag">
-                            <span class="color-preview" style="background-color: {{ color }};"></span>
-                            {{ color }}
-                        </span>
-                    {% empty %}
-                        <p class="text-muted">No has seleccionado colores preferidos</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Talla -->
-                <div class="mb-3">
-                    <h6>Tu Talla:</h6>
-                    <span class="preference-tag">{{ preferencias.talla }}</span>
-                </div>
-
-                <!-- Rango de Precios -->
-                <div class="mb-3">
-                    <h6>Rango de Precios:</h6>
-                    <span class="preference-tag">
-                        ${{ preferencias.rango_precios.min }} - ${{ preferencias.rango_precios.max }}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="analysis-card">
-                <h4>Análisis de Interacciones</h4>
-
-                <!-- Estilos más likeados -->
-                <div class="mb-3">
-                    <h6>Estilos que más te gustan:</h6>
-                    {% for estilo, count in interacciones.estilos_preferidos.items|slice:":5" %}
-                        <span class="preference-tag">
-                            {{ estilo }} ({{ count }})
-                        </span>
-                    {% empty %}
-                        <p class="text-muted">Aún no has interactuado con publicaciones</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Colores más likeados -->
-                <div class="mb-3">
-                    <h6>Colores que más te gustan:</h6>
-                    {% for color, count in interacciones.colores_preferidos.items|slice:":5" %}
-                        <span class="preference-tag">
-                            <span class="color-preview" style="background-color: {{ color }};"></span>
-                            {{ color }} ({{ count }})
-                        </span>
-                    {% empty %}
-                        <p class="text-muted">Aún no has interactuado con publicaciones</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Análisis de Sentimiento -->
-                <div class="mb-3">
-                    <h6>Análisis de tu perfil:</h6>
-                    <div>
-                        <small>Polaridad (Negativo - Positivo):</small>
-                        <div class="sentiment-meter">
-                            <div class="sentiment-value" style="width: {{ sentimiento.polaridad|add:1|multiply:50 }}%;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <small>Subjetividad (Objetivo - Subjetivo):</small>
-                        <div class="sentiment-meter">
-                            <div class="sentiment-value" style="width: {{ sentimiento.subjetividad|multiply:100 }}%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recomendaciones -->
-    <h3 class="mb-4">Prendas Recomendadas para Ti</h3>
-    <div class="row">
-        {% for publicacion in recomendaciones %}
-        <div class="col-md-4 mb-4">
-            <div class="card recommendation-card">
-                <img src="{{ publicacion.imagen_url }}" class="card-img-top" alt="{{ publicacion.titulo }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ publicacion.titulo }}</h5>
-                    <p class="card-text">{{ publicacion.descripcion|truncatechars:100 }}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <strong class="text-success">${{ publicacion.precio }}</strong>
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary" onclick="toggleLike({{ publicacion.id }})">
-                                <i class="fas fa-thumbs-up"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="toggleFavorito({{ publicacion.id }})">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                No tenemos recomendaciones disponibles en este momento. 
-                ¡Interactúa con más publicaciones para obtener mejores recomendaciones!
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-// Reutilizamos las funciones de like y favoritos del inicio
-</script>
+<h2>Comentarios Analizados</h2>
+<table>
+    <tr>
+        <th>Usuario ID</th>
+        <th>Publicación ID</th>
+        <th>Comentario</th>
+        <th>Sentimiento</th>
+    </tr>
+    {% for comentario in comentarios %}
+        <tr>
+            <td>{{ comentario.usuario_id }}</td>
+            <td>{{ comentario.publicacion_id }}</td>
+            <td>{{ comentario.comentario }}</td>
+            <td>{{ comentario.sentimiento }}</td>
+        </tr>
+    {% endfor %}
+</table>
 {% endblock %} 

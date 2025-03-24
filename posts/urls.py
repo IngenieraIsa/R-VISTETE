@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import analisis_y_recomendaciones
 
 app_name = 'posts'
 
@@ -16,8 +17,9 @@ urlpatterns = [
     path('publicar/', views.publicar_prenda, name='publicar_prenda'),
     path('mis-ventas/', views.mis_ventas_view, name='mis_ventas'),
     path('mis-alquileres/', views.mis_alquileres_view, name='mis_alquileres'),
-    path('recomendaciones/', views.obtener_recomendaciones, name='recomendaciones'),
     path('dislike/<int:publicacion_id>/', views.toggle_dislike, name='toggle_dislike'),
     path('notificaciones/', views.notificaciones_view, name='notificaciones'),
+    path('analisis/', analisis_y_recomendaciones, name='analisis_y_recomendaciones'),
+    path('recomendaciones/', views.obtener_recomendaciones, name='recomendaciones'),
     path('api/recomendaciones/', views.obtener_recomendaciones, name='obtener_recomendaciones'),
 ]

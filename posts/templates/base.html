@@ -247,11 +247,14 @@
                             {% endif %}
                         </a>
                     </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link" href="/inicio/mensajes">
                             <i class="fas fa-envelope"></i> Mensajes
                         </a>
                     </li>
+                    
+                    
                 </ul>
                 <ul class="navbar-nav">
                     
@@ -289,6 +292,11 @@
                             <div class="notifications-empty">
                                 <i class="fas fa-bell-slash"></i>
                                 <p>No tienes notificaciones</p>
+                            </div>
+                            <div class="notification-item">
+                                <a href="{% url 'posts:recomendaciones' %}">
+                                    <i class="fas fa-star"></i> Nuevas recomendaciones disponibles
+                                </a>
                             </div>
                         </div>
                         

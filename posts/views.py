@@ -14,6 +14,101 @@ from recommendations.recommendation_engine import RecommendationEngine
 from .recommender import RecomendadorPrendas
 from django.contrib import messages
 from recommendations.sentiment_analyzer import SentimentAnalyzer
+import pandas as pd
+from textblob import TextBlob
+import nltk
+from django.shortcuts import render
+from .models import Comentario, Like, Favorito, Publicacion
+from users.models import PerfilUsuario
+# Asegúrate de descargar los recursos necesarios de NLTK
+nltk.download('punkt')
+
+
+def analizar_comentarios():
+    comentarios = Comentario.objects.all()
+    data_comentarios = {
+        'usuario_id': [],
+        'publicacion_id': [],
+        'comentario': [],
+        'sentimiento': []
+    }
+
+    for comentario in comentarios:
+        analisis = TextBlob(comentario.comentario)
+        data_comentarios['usuario_id'].append(comentario.usuario_id)
+        data_comentarios['publicacion_id'].append(comentario.publicacion_id)
+        data_comentarios['comentario'].append(comentario.comentario)
+        data_comentarios['sentimiento'].append(analisis.sentiment.polarity)
+
+    df_comentarios = pd.DataFrame(data_comentarios)
+    return df_comentarios
+
+def analizar_likes_favoritos():
+    likes = Like.objects.all()
+    favoritos = Favorito.objects.all()
+
+    # Análisis de Likes
+    data_likes = {
+        'usuario_id': [],
+        'publicacion_id': [],
+        'sentimiento': []
+    }
+
+    for like in likes:
+        publicacion = Publicacion.objects.get(id=like.publicacion_id)
+        analisis = TextBlob(publicacion.titulo)  # O usa publicacion.descripcion
+        data_likes['usuario_id'].append(like.usuario_id)
+        data_likes['publicacion_id'].append(like.publicacion_id)
+        data_likes['sentimiento'].append(analisis.sentiment.polarity)
+
+    df_likes = pd.DataFrame(data_likes)
+
+    # Análisis de Favoritos
+    data_favoritos = {
+        'usuario_id': [],
+        'publicacion_id': [],
+        'sentimiento': []
+    }
+
+    for favorito in favoritos:
+        publicacion = Publicacion.objects.get(id=favorito.publicacion_id)
+        analisis = TextBlob(publicacion.titulo)  # O usa publicacion.descripcion
+        data_favoritos['usuario_id'].append(favorito.usuario_id)
+        data_favoritos['publicacion_id'].append(favorito.publicacion_id)
+        data_favoritos['sentimiento'].append(analisis.sentiment.polarity)
+
+    df_favoritos = pd.DataFrame(data_favoritos)
+
+    return df_likes, df_favoritos
+
+def recomendar_publicaciones(usuario_id):
+    perfil = PerfilUsuario.objects.get(usuario_id=usuario_id)
+    colores_preferidos = perfil.colores_preferidos
+    estilos_preferidos = perfil.estilos_preferidos
+
+    publicaciones = Publicacion.objects.all()
+    recomendaciones = []
+
+    for publicacion in publicaciones:
+        if (any(estilo in publicacion.estilo for estilo in estilos_preferidos) or
+                any(color in publicacion.colores for color in colores_preferidos)):
+            recomendaciones.append(publicacion)
+
+    return recomendaciones
+def analisis_y_recomendaciones(request):
+    usuario_id = request.user.id  # O el ID del usuario que deseas analizar
+    df_comentarios = analizar_comentarios()
+    df_likes, df_favoritos = analizar_likes_favoritos()
+    recomendaciones = recomendar_publicaciones(usuario_id)
+
+    context = {
+        'comentarios': df_comentarios,
+        'likes': df_likes,
+        'favoritos': df_favoritos,
+        'recomendaciones': recomendaciones,
+    }
+
+    return render(request, 'recomendaciones.html', context)
 
 #inicio - publicaciones
 
