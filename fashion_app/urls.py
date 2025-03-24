@@ -40,7 +40,7 @@ def home_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('usuarios/', include('users.urls')),
-    path('inicio/', include('posts.urls')),  # Todas las URLs de posts estarán bajo /inicio/
+    path('inicio/', include('posts.urls', namespace='posts')),
     path('', home_view, name='home'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

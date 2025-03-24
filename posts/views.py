@@ -19,7 +19,7 @@ from textblob import TextBlob
 import nltk
 from django.shortcuts import render
 from .models import Comentario, Like, Favorito, Publicacion
-from users.models import PerfilUsuario
+from users.models import PerfilUsuario  # Cambia 'users' por la aplicación donde esté definido
 # Asegúrate de descargar los recursos necesarios de NLTK
 nltk.download('punkt')
 
@@ -297,9 +297,9 @@ def mis_ventas_view(request):
         busqueda = request.GET.get('busqueda')
 
         if estado:
-            if estado == 'vendida':
+            if (estado == 'vendida'):
                 mis_publicaciones = mis_publicaciones.filter(id__in=ventas.filter(estado='completada').values('publicacion_id'))
-            elif estado == 'disponible':
+            elif (estado == 'disponible'):
                 mis_publicaciones = mis_publicaciones.exclude(id__in=ventas.filter(estado='completada').values('publicacion_id'))
 
         if busqueda:
@@ -365,11 +365,11 @@ def mis_alquileres_view(request):
         busqueda = request.GET.get('busqueda')
 
         if estado:
-            if estado == 'alquilada':
+            if (estado == 'alquilada'):
                 mis_publicaciones = mis_publicaciones.filter(
                     id__in=alquileres.filter(estado='activo').values('publicacion_id')
                 )
-            elif estado == 'disponible':
+            elif (estado == 'disponible'):
                 mis_publicaciones = mis_publicaciones.exclude(
                     id__in=alquileres.filter(estado='activo').values('publicacion_id')
                 )
@@ -697,7 +697,7 @@ def recomendaciones_view(request):
             'usuario': usuario
         }
         
-        return render(request, 'recomendaciones.html', context)
+        return render(request, 'posts/recomendaciones.html', context)
     except Exception as e:
         print(f"Error al generar recomendaciones: {str(e)}")
         return redirect('inicio')
@@ -762,37 +762,79 @@ def ver_dislikes(request):
         request.session.flush()
         return redirect('/usuarios/login/')
 
-@login_required
+
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Publicacion, Like, Favorito, Comentario
+from users.models import PerfilUsuario
+
 def obtener_recomendaciones(request):
+    usuario = request.user  # Usuario autenticado
+    try:
+        # Obtener el perfil del usuario
+        perfil = PerfilUsuario.objects.get(usuario_id=usuario.id)
+        print("Perfil del usuario:", perfil)
+        print("Estilos preferidos:", perfil.estilos_preferidos)
+        print("Colores preferidos:", perfil.colores_preferidos)
+        print("Talla:", perfil.talla)
+    except PerfilUsuario.DoesNotExist:
+        # Si el usuario no tiene un perfil, no se pueden generar recomendaciones
+        print("El usuario no tiene un perfil asociado.")
+        return render(request, 'posts/recomendaciones.html', {'recomendaciones': []})
+
     # Obtener las interacciones del usuario
-    likes = Like.objects.filter(usuario_id=request.user.id)
-    favoritos = Favorito.objects.filter(usuario_id=request.user.id)
-    comentarios = Comentario.objects.filter(usuario_id=request.user.id)
-    
-    # Crear el analizador de sentimientos
-    analyzer = SentimentAnalyzer(request.user.id)
-    
-    # Analizar las interacciones del usuario
-    analyzer.analizar_likes(likes)
-    analyzer.analizar_favoritos(favoritos)
-    analyzer.analizar_comentarios(comentarios)
-    
-    # Obtener todas las publicaciones excepto las del usuario
-    publicaciones = Publicacion.objects.exclude(usuario_id=request.user.id)
-    
-    # Generar recomendaciones
-    recomendaciones_con_score = analyzer.generar_recomendaciones(publicaciones, limit=10)
-    
-    # Preparar los datos para la plantilla
-    recomendaciones_data = []
-    for pub, score in recomendaciones_con_score:
-        recomendaciones_data.append({
-            'publicacion': pub,
-            'score': round(score, 2),
-            'razones': analyzer.obtener_razones_recomendacion(pub)
-        })
-    
-    return render(request, 'posts/recomendaciones.html', {
-        'recomendaciones': recomendaciones_data,
-        'preferencias': analyzer.preferencias
-    })
+    likes = Like.objects.filter(usuario_id=usuario.id).values_list('publicacion_id', flat=True)
+    favoritos = Favorito.objects.filter(usuario_id=usuario.id).values_list('publicacion_id', flat=True)
+    comentarios = Comentario.objects.filter(usuario_id=usuario.id).values_list('publicacion_id', flat=True)
+
+    # Combinar todas las publicaciones con interacciones
+    publicaciones_interactuadas = set(likes) | set(favoritos) | set(comentarios)
+    print("Publicaciones interactuadas:", publicaciones_interactuadas)
+
+    # Filtrar publicaciones que no sean del usuario y no hayan sido interactuadas
+    publicaciones = Publicacion.objects.exclude(usuario_id=usuario.id).exclude(id__in=publicaciones_interactuadas)
+    print("Publicaciones candidatas:", publicaciones)
+
+    recomendaciones = []
+    for publicacion in publicaciones:
+        score = 0
+        razones = []
+
+        # Comparar estilos
+        if perfil and publicacion.estilo:
+            estilos_usuario = perfil.estilos_preferidos.split(', ') if perfil.estilos_preferidos else []
+            estilos_publicacion = publicacion.estilo.strip('{}').split(',')  # Convertir a lista
+            estilos_comunes = set(estilos_usuario) & set(estilos_publicacion)
+            if estilos_comunes:
+                score += len(estilos_comunes) * 10
+                razones.append(f"Coincidencia de estilos: {', '.join(estilos_comunes)}")
+
+        # Comparar colores
+        if perfil and publicacion.colores:
+            colores_usuario = perfil.colores_preferidos.split(', ') if perfil.colores_preferidos else []
+            colores_publicacion = publicacion.colores.strip('{}').split(',')  # Convertir a lista
+            colores_comunes = set(colores_usuario) & set(colores_publicacion)
+            if colores_comunes:
+                score += len(colores_comunes) * 5
+                razones.append(f"Coincidencia de colores: {', '.join(colores_comunes)}")
+
+        # Comparar talla
+        if perfil and publicacion.talla == perfil.talla:
+            score += 15
+            razones.append(f"Coincidencia de talla: {perfil.talla}")
+
+        # Agregar publicación a las recomendaciones si tiene un puntaje
+        if score > 0:
+            recomendaciones.append({
+                'publicacion': publicacion,
+                'score': score,
+                'razones': razones
+            })
+
+    # Ordenar recomendaciones por puntaje
+    recomendaciones = sorted(recomendaciones, key=lambda x: x['score'], reverse=True)
+    print("Recomendaciones generadas:", recomendaciones)
+
+    return render(request, 'posts/recomendaciones.html', {'recomendaciones': recomendaciones})
+
+
