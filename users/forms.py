@@ -15,27 +15,27 @@ class PerfilUsuarioForm(forms.ModelForm):
     ]
 
     ESTILOS = [
-        ('casual', 'Casual'),
-        ('formal', 'Formal'),
-        ('deportivo', 'Deportivo'),
-        ('elegante', 'Elegante'),
-        ('bohemio', 'Bohemio'),
-        ('vintage', 'Vintage'),
-        ('minimalista', 'Minimalista'),
-        ('streetwear', 'Streetwear')
+        ('Casual', 'Casual'),
+        ('Formal', 'Formal'),
+        ('Deportivo', 'Deportivo'),
+        ('Elegante', 'Elegante'),
+        ('Bohemio', 'Bohemio'),
+        ('Vintage', 'Vintage'),
+        ('Minimalista', 'Minimalista'),
+        ('Streetwear', 'Streetwear')
     ]
 
     COLORES = [
-        ('#000000', 'Negro'),
-        ('#FFFFFF', 'Blanco'),
-        ('#FF0000', 'Rojo'),
-        ('#0000FF', 'Azul'),
-        ('#008000', 'Verde'),
-        ('#FFFF00', 'Amarillo'),
-        ('#FFC0CB', 'Rosa'),
-        ('#800080', 'Morado'),
-        ('#A52A2A', 'Marrón'),
-        ('#808080', 'Gris')
+        ('Negro', 'Negro'),
+        ('Blanco', 'Blanco'),
+        ('Rojo', 'Rojo'),
+        ('Azul', 'Azul'),
+        ('Verde', 'Verde'),
+        ('Amarillo', 'Amarillo'),
+        ('Rosa', 'Rosa'),
+        ('Morado', 'Morado'),
+        ('Marrón', 'Marrón'),
+        ('Gris', 'Gris')
     ]
 
     RANGOS_PRECIO = [
@@ -137,7 +137,8 @@ class PerfilUsuarioForm(forms.ModelForm):
 
     def clean_ocasiones_uso(self):
         ocasiones = self.cleaned_data.get('ocasiones_uso', '')
-        return [ocasion.strip() for ocasion in ocasiones.split(',') if ocasion.strip()]
+        # Devolver el texto tal cual lo ingresa el usuario
+        return ocasiones.strip()
 
     def clean_redes_sociales(self):
         redes = self.cleaned_data.get('redes_sociales', {})
@@ -147,17 +148,14 @@ class PerfilUsuarioForm(forms.ModelForm):
 
     def clean_intereses(self):
         intereses = self.cleaned_data.get('intereses', '')
-        if intereses:
-            # Convertir el string de intereses separados por comas a una lista
-            return [interes.strip() for interes in intereses.split(',')]
-        return []
+        return intereses.strip()
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         
-        # Asegurarse de que los campos array se guarden correctamente
-        instance.estilos_preferidos = self.cleaned_data.get('estilos_preferidos', [])
-        instance.colores_preferidos = self.cleaned_data.get('colores_preferidos', [])
+        # Asegurarse de que los campos se guarden como texto
+        instance.estilos_preferidos = ', '.join(self.cleaned_data.get('estilos_preferidos', []))
+        instance.colores_preferidos = ', '.join(self.cleaned_data.get('colores_preferidos', []))
         
         if commit:
             instance.save()

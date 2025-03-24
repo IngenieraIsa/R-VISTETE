@@ -56,6 +56,18 @@ class Like(models.Model):
     def __str__(self):
         return f"{self.usuario.nombre} liked {self.publicacion.titulo}"
 
+class Dislike(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE)
+    fecha_dislike = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'dislikes'
+        unique_together = ('usuario', 'publicacion')
+
+    def __str__(self):
+        return f"{self.usuario.nombre} disliked {self.publicacion.titulo}"
+
 class Comentario(models.Model):
     id = models.AutoField(primary_key=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='usuario_id')

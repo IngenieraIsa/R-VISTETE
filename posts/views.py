@@ -1,15 +1,21 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Sum, Count, Q
-from .models import Publicacion, Comentario, Venta, Alquiler, Favorito, Like
+from .models import Publicacion, Comentario, Venta, Alquiler, Favorito, Like, Dislike
 from users.models import Usuario
 from django.utils import timezone
 import json
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from recommendations.recommendation_engine import RecommendationEngine
+from .recommender import RecomendadorPrendas
+from django.contrib import messages
+from recommendations.sentiment_analyzer import SentimentAnalyzer
+
+#inicio - publicaciones
 
 def inicio_view(request):
     # Debug logging
@@ -33,11 +39,11 @@ def inicio_view(request):
         # Obtener las publicaciones con sus comentarios
         publicaciones = Publicacion.objects.all().order_by('-fecha_publicacion')
         
-        # ✅ Convertir arrays de PostgreSQL a listas legibles para la plantilla
+        # Convertir arrays a strings para la plantilla
         for publicacion in publicaciones:
             publicacion.estilo = ", ".join(publicacion.estilo) if publicacion.estilo else "No especificado"
             publicacion.colores = ", ".join(publicacion.colores) if publicacion.colores else "No especificado"
-
+        
         # Obtener los comentarios para cada publicación
         for publicacion in publicaciones:
             publicacion.comentarios = Comentario.objects.filter(
@@ -56,6 +62,15 @@ def inicio_view(request):
         for publicacion in publicaciones:
             publicacion.likes_count = Like.objects.filter(publicacion=publicacion).count()
         
+        # Obtener los dislikes del usuario actual si está autenticado
+        dislikes_usuario = set()
+        if request.user.is_authenticated:
+            dislikes_usuario = set(Dislike.objects.filter(usuario=request.user).values_list('publicacion_id', flat=True))
+        
+        # Agregar conteo de dislikes a cada publicación
+        for publicacion in publicaciones:
+            publicacion.dislikes_count = Dislike.objects.filter(publicacion=publicacion).count()
+        
         context = {
             'publicaciones': publicaciones,
             'usuario': usuario,
@@ -63,7 +78,8 @@ def inicio_view(request):
             'favoritos': list(favoritos_ids),
             'favoritos_count': favoritos.count(),
             'likes': list(likes_ids),
-            'likes_count': likes.count()
+            'likes_count': likes.count(),
+            'dislikes_usuario': dislikes_usuario
         }
         print("Rendering inicio.html with context")
         return render(request, 'inicio.html', context)
@@ -78,7 +94,7 @@ def inicio_view(request):
         return redirect('/usuarios/login/')
 
 
-
+#comentarios
 
 @require_http_methods(["GET"])
 def get_comentarios(request, publicacion_id):
@@ -107,6 +123,7 @@ def get_comentarios(request, publicacion_id):
         print("Error al obtener comentarios:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+#crear comentarios
 @login_required
 @require_http_methods(["POST"])
 def crear_comentario(request):
@@ -154,6 +171,7 @@ def crear_comentario(request):
         print("Error general:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+#ventas
 @login_required(login_url='/users/login/')
 def mis_ventas_view(request):
     try:
@@ -215,6 +233,7 @@ def mis_ventas_view(request):
         # Si el usuario no tiene perfil, redirigir a completar perfil
         return redirect('completar_perfil')
 
+#alquileres
 @login_required(login_url='/users/login/')
 def mis_alquileres_view(request):
     try:
@@ -289,15 +308,27 @@ def mis_alquileres_view(request):
         # Si el usuario no tiene perfil, redirigir a completar perfil
         return redirect('completar_perfil')
 
+#notificaciones
 @login_required
 def notificaciones_view(request):
-    # Por ahora, solo renderizamos la plantilla con un mensaje
-    # En el futuro, aquí cargaremos las notificaciones de la base de datos
-    context = {
-        'notificaciones': []  # Lista vacía por ahora
-    }
-    return render(request, 'notificaciones.html', context)
+    try:
+        # Obtener recomendaciones personalizadas
+        recomendador = RecomendadorPrendas(request.user.id)
+        recomendaciones = recomendador.generar_recomendaciones(limit=5)
+        
+        context = {
+            'recomendaciones': recomendaciones,
+        }
+        return render(request, 'posts/notificaciones.html', context)
+    except Exception as e:
+        context = {
+            'error': 'No se pudieron cargar las recomendaciones en este momento.',
+            'recomendaciones': []
+        }
+        return render(request, 'posts/notificaciones.html', context)
 
+
+#favoritos
 @require_http_methods(["POST"])
 def toggle_favorito(request, publicacion_id):
     try:
@@ -335,6 +366,7 @@ def toggle_favorito(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+#ver favoritos
 def ver_favoritos(request):
     # Verificar si el usuario está autenticado
     usuario_id = request.session.get('usuario_id')
@@ -357,6 +389,7 @@ def ver_favoritos(request):
         request.session.flush()
         return redirect('/usuarios/login/')
 
+#likes
 @require_http_methods(["POST"])
 def toggle_like(request, publicacion_id):
     try:
@@ -398,6 +431,7 @@ def toggle_like(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+#ver likes
 def ver_likes(request):
     # Verificar si el usuario está autenticado
     usuario_id = request.session.get('usuario_id')
@@ -420,6 +454,7 @@ def ver_likes(request):
         request.session.flush()
         return redirect('/usuarios/login/')
 
+#agregar comentarios a las publicaciones
 @require_http_methods(["POST"])
 def agregar_comentario(request, publicacion_id):
     try:
@@ -460,6 +495,7 @@ def agregar_comentario(request, publicacion_id):
         print("Error al agregar comentario:", str(e))
         return JsonResponse({'error': str(e)}, status=500)
 
+#publicar prendas
 @login_required
 def publicar_prenda(request):
     if request.method == 'POST':
@@ -467,36 +503,32 @@ def publicar_prenda(request):
             # Obtener el usuario de la sesión
             usuario_id = request.session.get('usuario_id')
             if not usuario_id:
-                return JsonResponse({'success': False, 'error': 'Usuario no autenticado'}, status=401)
+                messages.error(request, 'Usuario no autenticado')
+                return redirect('login')
 
-            # Procesar la imagen
-            imagen = request.FILES.get('imagen')
-            if imagen:
-                # Guardar la imagen y obtener la URL
-                path = default_storage.save(f'prendas/{imagen.name}', ContentFile(imagen.read()))
-                imagen_url = default_storage.url(path)
-            else:
-                return JsonResponse({'success': False, 'error': 'La imagen es obligatoria'}, status=400)
-
-            # Obtener los datos del formulario
+            # Obtener datos del formulario
             titulo = request.POST.get('titulo')
             descripcion = request.POST.get('descripcion')
             tipo = request.POST.get('tipo')
-            precio = float(request.POST.get('precio', 0))
-            deposito = float(request.POST.get('deposito', 0)) if tipo == 'alquiler' else 0
+            precio = request.POST.get('precio')
+            deposito = request.POST.get('deposito') if tipo == 'alquiler' else None
+            publico = request.POST.get('publico')
+            talla = request.POST.get('talla')
+            estilos = request.POST.getlist('estilo[]')
+            colores = request.POST.getlist('colores[]')
 
-            # Validaciones
-            if not titulo or not descripcion or not tipo or precio <= 0:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Por favor completa todos los campos obligatorios'
-                }, status=400)
+            # Validar campos requeridos
+            if not all([titulo, tipo, precio, publico, talla, estilos, colores]):
+                messages.error(request, 'Por favor completa todos los campos obligatorios')
+                return redirect('publicar')
 
-            if tipo == 'alquiler' and deposito <= 0:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'El depósito es obligatorio para alquileres'
-                }, status=400)
+            # Procesar imagen si se proporcionó
+            imagen_url = None
+            if 'imagen' in request.FILES:
+                imagen = request.FILES['imagen']
+                # Guardar la imagen y obtener la URL
+                path = default_storage.save(f'prendas/{imagen.name}', ContentFile(imagen.read()))
+                imagen_url = default_storage.url(path)
 
             # Crear la publicación
             publicacion = Publicacion.objects.create(
@@ -507,23 +539,22 @@ def publicar_prenda(request):
                 precio=precio,
                 tipo=tipo,
                 deposito=deposito,
-                fecha_publicacion=timezone.now()
+                publico=publico,
+                talla=talla,
+                estilo=estilos,
+                colores=colores
             )
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Publicación creada exitosamente',
-                'publicacion_id': publicacion.id
-            })
+            messages.success(request, 'Publicación creada exitosamente')
+            return redirect('inicio')
+
         except Exception as e:
-            print(f"Error al crear la publicación: {str(e)}")
-            return JsonResponse({
-                'success': False,
-                'error': 'Error al crear la publicación'
-            }, status=500)
+            messages.error(request, f'Error al crear la publicación: {str(e)}')
+            return redirect('publicar')
 
-    return render(request, 'inicio.html')
+    return render(request, 'posts/publicar.html')
 
+#ver publicaciones
 @login_required
 def ver_publicacion(request, publicacion_id):
     try:
@@ -548,3 +579,125 @@ def ver_publicacion(request, publicacion_id):
         return render(request, 'posts/ver_publicacion.html', context)
     except Publicacion.DoesNotExist:
         return redirect('inicio')
+
+@login_required
+def recomendaciones_view(request):
+    try:
+        usuario = request.user.usuario
+        engine = RecommendationEngine(usuario)
+        
+        # Obtener recomendaciones
+        recomendaciones = engine.generar_recomendaciones()
+        
+        # Obtener análisis de preferencias
+        preferencias = engine.analizar_preferencias_usuario()
+        interacciones = engine.analizar_interacciones()
+        sentimiento = engine.analizar_sentimiento_descripcion()
+        
+        context = {
+            'recomendaciones': recomendaciones,
+            'preferencias': preferencias,
+            'interacciones': interacciones,
+            'sentimiento': sentimiento,
+            'usuario': usuario
+        }
+        
+        return render(request, 'recomendaciones.html', context)
+    except Exception as e:
+        print(f"Error al generar recomendaciones: {str(e)}")
+        return redirect('inicio')
+
+@login_required
+def toggle_dislike(request, publicacion_id):
+    try:
+        # Obtener el usuario actual y la publicación
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return JsonResponse({'success': False, 'error': 'Usuario no autenticado'}, status=401)
+            
+        usuario = Usuario.objects.get(id=usuario_id)
+        publicacion = get_object_or_404(Publicacion, id=publicacion_id)
+        
+        # Verificar si ya existe un dislike
+        dislike = Dislike.objects.filter(usuario=usuario, publicacion=publicacion).first()
+        
+        if dislike:
+            # Si ya existe un dislike, lo eliminamos
+            dislike.delete()
+            is_disliked = False
+        else:
+            # Si no existe, primero eliminamos cualquier like existente
+            Like.objects.filter(usuario=usuario, publicacion=publicacion).delete()
+            # Luego creamos el nuevo dislike
+            Dislike.objects.create(usuario=usuario, publicacion=publicacion)
+            is_disliked = True
+        
+        # Obtener el nuevo conteo de dislikes
+        dislikes_count = Dislike.objects.filter(publicacion=publicacion).count()
+        
+        return JsonResponse({
+            'success': True,
+            'is_disliked': is_disliked,
+            'dislikes_count': dislikes_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+#ver dislikes
+def ver_dislikes(request):
+    # Verificar si el usuario está autenticado
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        return redirect('/usuarios/login/')
+    
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        # Obtener todas las publicaciones que el usuario ha dado dislike
+        dislikes = Dislike.objects.filter(usuario=usuario).select_related('publicacion')
+        
+        context = {
+            'dislikes': dislikes,
+            'usuario': usuario,
+            'nombre_usuario': usuario.nombre,
+            'dislikes_count': dislikes.count()
+        }
+        return render(request, 'posts/dislikes.html', context)
+    except Usuario.DoesNotExist:
+        request.session.flush()
+        return redirect('/usuarios/login/')
+
+@login_required
+def obtener_recomendaciones(request):
+    # Obtener las interacciones del usuario
+    likes = Like.objects.filter(usuario_id=request.user.id)
+    favoritos = Favorito.objects.filter(usuario_id=request.user.id)
+    comentarios = Comentario.objects.filter(usuario_id=request.user.id)
+    
+    # Crear el analizador de sentimientos
+    analyzer = SentimentAnalyzer(request.user.id)
+    
+    # Analizar las interacciones del usuario
+    analyzer.analizar_likes(likes)
+    analyzer.analizar_favoritos(favoritos)
+    analyzer.analizar_comentarios(comentarios)
+    
+    # Obtener todas las publicaciones excepto las del usuario
+    publicaciones = Publicacion.objects.exclude(usuario_id=request.user.id)
+    
+    # Generar recomendaciones
+    recomendaciones_con_score = analyzer.generar_recomendaciones(publicaciones, limit=10)
+    
+    # Preparar los datos para la plantilla
+    recomendaciones_data = []
+    for pub, score in recomendaciones_con_score:
+        recomendaciones_data.append({
+            'publicacion': pub,
+            'score': round(score, 2),
+            'razones': analyzer.obtener_razones_recomendacion(pub)
+        })
+    
+    return render(request, 'posts/recomendaciones.html', {
+        'recomendaciones': recomendaciones_data,
+        'preferencias': analyzer.preferencias
+    })
