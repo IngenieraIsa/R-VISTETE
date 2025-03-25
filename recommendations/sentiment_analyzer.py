@@ -86,19 +86,13 @@ class SentimentAnalyzer:
     def generar_recomendaciones(self, publicaciones_queryset, limit=10):
         """Genera recomendaciones basadas en las preferencias del usuario"""
         recomendaciones = []
+        for publicacion in publicaciones_queryset:
+            score = self.obtener_score_relevancia(publicacion)
+            recomendaciones.append((publicacion, score))
         
-        for pub in publicaciones_queryset:
-            # No recomendamos publicaciones que ya tienen interacción
-            if pub in self.likes or pub in self.favoritos:
-                continue
-                
-            score = self.obtener_score_relevancia(pub)
-            if score > 0:
-                recomendaciones.append((pub, score))
-        
-        # Ordenamos por score y retornamos las top N recomendaciones
+        # Ordenar por relevancia y limitar resultados
         recomendaciones.sort(key=lambda x: x[1], reverse=True)
-        return recomendaciones[:limit]
+        return [rec[0] for rec in recomendaciones[:limit]]
 
     def obtener_razones_recomendacion(self, publicacion):
         """Genera explicaciones de por qué se recomienda una publicación"""
@@ -118,4 +112,4 @@ class SentimentAnalyzer:
         if publicacion.talla in self.preferencias['tallas']:
             razones.append(f"Es de tu talla preferida: {publicacion.talla}")
             
-        return razones 
+        return razones

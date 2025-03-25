@@ -117,64 +117,34 @@
     </div>
 
     <!-- Lista de recomendaciones -->
-    <div class="row">
-        {% for rec in recomendaciones %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="{{ rec.publicacion.imagen_url }}" class="card-img-top" alt="{{ rec.publicacion.titulo }}" style="height: 200px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ rec.publicacion.titulo }}</h5>
-                    <p class="card-text">{{ rec.publicacion.descripcion|truncatechars:100 }}</p>
-                    
-                    <!-- Relevancia -->
-                    <div class="mb-3">
-                        <h6>Relevancia: {{ rec.score|floatformat:2 }}</h6>
-                        <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" 
-                                 style="width: {{ rec.score|multiply:20 }}%" 
-                                 aria-valuenow="{{ rec.score|multiply:20 }}" 
-                                 aria-valuemin="0" 
-                                 aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Razones -->
-                    <div class="mb-3">
-                        <h6>Por qué te puede interesar:</h6>
-                        <ul class="list-unstyled">
+    <div class="container mt-4">
+        <div class="row">
+            {% for rec in recomendaciones %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="{{ rec.publicacion.imagen_url }}" class="card-img-top" alt="{{ rec.publicacion.titulo }}" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ rec.publicacion.titulo }}</h5>
+                        <p class="card-text">{{ rec.publicacion.descripcion|truncatechars:100 }}</p>
+                        <p class="h5 mb-3">Precio: ${{ rec.publicacion.precio }}</p>
+                        <h6>Relevancia: {{ rec.score }}</h6>
+                        <ul>
                             {% for razon in rec.razones %}
-                            <li><i class="fas fa-check text-success"></i> {{ razon }}</li>
+                            <li>{{ razon }}</li>
                             {% endfor %}
                         </ul>
                     </div>
-                    
-                    <!-- Precio y botones de acción -->
-                    <p class="h5 mb-3">Precio: ${{ rec.publicacion.precio }}</p>
-                    <div class="btn-group w-100">
-                        {% if rec.publicacion.tipo == 'venta' %}
-                        <button class="btn btn-primary">
-                            <i class="fas fa-shopping-cart"></i> Comprar
-                        </button>
-                        {% else %}
-                        <button class="btn btn-success">
-                            <i class="fas fa-key"></i> Alquilar
-                        </button>
-                        {% endif %}
-                        <button class="btn btn-outline-danger">
-                            <i class="fas fa-heart"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Aún no tenemos suficientes datos para generar recomendaciones personalizadas.
-                Interactúa con más publicaciones para obtener mejores sugerencias.
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Aún no tenemos suficientes datos para generar recomendaciones personalizadas.
+                    Interactúa con más publicaciones para obtener mejores sugerencias.
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}
@@ -233,4 +203,5 @@ function cargarRecomendaciones() {
         });
 }
 </script>
-{% endblock %} 
+
+{% endblock %}
